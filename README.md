@@ -1,49 +1,61 @@
-# forgecli
+# ForgeCLI
 
-My attempt at making a golang cli for curse forge
+Package was created with the express intent to remove the guess work out of Mod acquiring and updating.
 
-###
+## Getting your Forge API Key
 
-### ForgeAPI usage to use non-version specific projects
+This is more complicated because you will be pulling/using the latest mod for the release of your game. To get started make sure you have a [CursedForge API Key](https://docs.curseforge.com/#getting-started). Then use it as a parameter for your build
 
-**NOTE:** This potentially could lead to unexpected behavior if the Mod receives an update with unexpected behavior.
+## Quick start
 
-This is more complicated because you will be pulling/using the latest mod for the release of your game. To get started make sure you have a [CursedForge API Key](https://docs.curseforge.com/#getting-started). Then use the environmental parameters in your docker build.
+Simple command to download latest fabric modules:
 
-Please be aware of the following when using these options for your mods:
-
-- Mod Release types: Release, Beta, and Alpha.
-- Mod dependencies: Required and Optional
-- Mod family: Fabric, Forge, and Bukkit.
-
-Parameters to use the ForgeAPI:
-
-- `MODS_FORGEAPI_KEY` - Required
-- `MODS_FORGEAPI_FILE` - Required or use MODS_FORGEAPI_PROJECTIDS (Overrides MODS_FORGEAPI_PROJECTIDS)
-- `MODS_FORGEAPI_PROJECTIDS` - Required or use MODS_FORGEAPI_FILE
-- `MODS_FORGEAPI_RELEASES` - Default is release, Options: [Release|Beta|Alpha]
-- `MODS_FORGEAPI_DOWNLOAD_DEPENDENCIES` - Default is False, attempts to download required mods (releaseType Release) defined in Forge.
-- `MODS_FORGEAPI_IGNORE_GAMETYPE` - Default is False, Allows for filtering mods on family type: FORGE, FABRIC, and BUKKIT. (Does not filter for Vanilla or custom)
-- `REMOVE_OLD_FORGEAPI_MODS` - Default is False
-- `REMOVE_OLD_DATAPACKS_DEPTH` - Default is 1
-- `REMOVE_OLD_DATAPACKS_INCLUDE` - Default is \*.jar
-
-Example of expected forge api project ids, releases, and key:
-
-```yaml
-MODS_FORGEAPI_PROJECTIDS: 306612,256717
-MODS_FORGEAPI_RELEASES: Release
-MODS_FORGEAPI_KEY: $WRX...
+```bash
+. ./forgecli.exe -forgekey '$2a$10...' -projects "416089,391366,552655" -family "fabric" -debug
 ```
 
-Example of expected ForgeAPI file format.
+## ForgeCLI Usage Details
+
+**NOTE:** Due to the lack of Version pinning this can lead to unexpected behavior if the publisher updates mod unexpectedly.
+
+To get started make sure you have a [CursedForge API Key](https://docs.curseforge.com/#getting-started).
+
+**Default Folder Locations**:
+
+- `Windows`: - "%AppData%/Roaming/.minecraft/mods"
+- `Mac`: - "~/Library/Application Support/minecraft/mods"
+- `Linux`: - "~/Library/Application Support/minecraft/mods"
+
+**Mod basics**
+
+- `Mod Release types`: - Release, Beta, and Alpha.
+- `Mod dependencies`: - Required and Optional
+- `Mod family`: - Fabric, Forge, and Bukkit.
+- `Mod MC Version`: - 1.12.2, 1.18.2, etc.
+
+**CLI Parameters**:
+
+- `forgekey`: - Required as a parameter, or as an ENV var of FORGEKEY and MODS_FORGEAPI_KEY
+- `file`: - Specially formatted json to manager larger sets of mods.
+- `projects`: - Project ids that can be easily obtained from the Forge itself.
+- `destination`: - Default is OS Client Mod folder, Target folder for the downloaded mods.
+- `family`: - Used to filter mods based on server type. Options are Forge, Fabric, and Bukkit
+- `release`: - Default is Release, Used to allow for Beta and Alpha mod downloads.
+- `version`: - Default is LATEST, but this is Minecraft VERSION. e.g. 1.18.2
+- `clearMods`: - Default is false, allows CLI to remove all mods before downloading new Mods.
+- `downloadDependencies`: - Default is True, this uses the mods required dependencies to download missing mods.
+- `debug`: - Enable extra logging.
+
+## JSON File usage
 
 **Field Description**:
 
-- `name` is currently unused, but can be used to document each entry.
-- `projectID` id is the id found on the CurseForge website for a particular mod
-- `releaseType` Type corresponds to forge's R, B, A icon for each file. Default Release, options are (release|beta|alpha).
-- `fileName` is used for version pinning if latest file will not work for you.
+- `name`: - is currently unused, but can be used to document each entry.
+- `projectID`: - is the id found on the CurseForge website for a particular mod
+- `releaseType`: - Type corresponds to forge's R, B, A icon for each file. Default Release, options are (release|beta|alpha).
+- `fileName`: - is used for version pinning if latest file will not work for you.
+
+**Example json File Format**:
 
 ```json
 [
@@ -66,10 +78,22 @@ Example of expected ForgeAPI file format.
 ]
 ```
 
-### Testing
+### Manually Building and Testing
 
-Make a .env file in the root folder and add your forge key.
+Make a `./.env` file in the root folder and add your forge key.
 
+```text
 FORGEKEY='$2a$10...'
+```
 
+CMD To test the build
+
+```bash
 go test ./...
+```
+
+### TODO List
+
+- Update and proof read documentation
+- Add normal info logging. Currently the app runs silent without -debug
+- add fileName filter from json mods. Currently we have no method to pin versions
