@@ -56,6 +56,7 @@ To get started make sure you have a [CursedForge API Key](https://docs.curseforg
 
 **Field Description**
 
+
 - `name:` is currently unused, but can be used to document each entry.
 - `projectID:` is the id found on the CurseForge website for a particular mod
 - `releaseType:` Type corresponds to forge's R, B, A icon for each file. Default Release, options are (release|beta|alpha).
@@ -84,7 +85,7 @@ To get started make sure you have a [CursedForge API Key](https://docs.curseforg
 ]
 ```
 
-### Manually Building and Testing:
+### Manually Building and Testing
 
 Make a `./.env` file in the root folder and add your forge key.
 
@@ -105,7 +106,7 @@ go build
 # . ./forgecli should now be available to be used.
 ```
 
-### TODO List:
+### TODO List
 
 - Update and proof read documentation
 - Add normal info logging. Currently the app runs silent without -debug
