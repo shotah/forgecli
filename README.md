@@ -1,12 +1,12 @@
-# ForgeCLI
+# ForgeCLI Guide
 
 Package was created with the express intent to remove the guess work out of Mod acquiring and updating.
 
-## Getting Your Forge API Key
+## Getting Your Forge API Key:
 
 This is more complicated because you will be pulling/using the latest mod for the release of your game. To get started make sure you have a [CursedForge API Key](https://docs.curseforge.com/#getting-started). Then use it as a parameter for your build
 
-## Quick start
+## Basic Run:
 
 Simple command to download latest fabric modules:
 
@@ -14,7 +14,28 @@ Simple command to download latest fabric modules:
 . ./forgecli.exe -forgekey '$2a$10...' -projects "416089,391366,552655" -family "fabric" -debug
 ```
 
-## ForgeCLI Usage Details
+## Example Outputs:
+
+**Example Successful Run**
+
+```bash
+time="2022-02-28T09:37:51-08:00" level=info msg="Starting Forge Mod lookup"
+time="2022-02-28T09:37:51-08:00" level=info msg="Found Lastest FileID: 3667363 for Mod: 416089"
+time="2022-02-28T09:37:51-08:00" level=info msg="Downloading: https://edge.forgecdn.net/files/3667/363/voicechat-fabric-1.18.2-2.2.24.jar"
+time="2022-02-28T09:37:52-08:00" level=info msg="Files in Destination Folder:"
+time="2022-02-28T09:37:52-08:00" level=info msg="  voicechat-fabric-1.18.2-2.2.24.jar  "
+time="2022-02-28T09:37:52-08:00" level=info msg="Download Complete."
+```
+
+**Example Failed Run**
+
+```bash
+time="2022-02-28T09:52:14-08:00" level=info msg="Starting Forge Mod Lookup"
+time="2022-02-28T09:52:14-08:00" level=error msg="could not find 391366 for minecraft version: 1.18.2 or family: fabric"
+time="2022-02-28T09:52:14-08:00" level=error msg=Exiting...
+```
+
+## ForgeCLI Usage:
 
 **NOTE:** Due to the lack of Version pinning this can lead to unexpected behavior if the publisher updates mod unexpectedly.
 
@@ -26,7 +47,7 @@ To get started make sure you have a [CursedForge API Key](https://docs.curseforg
 - `Mac:` "~/Library/Application Support/minecraft/mods"
 - `Linux:` "~/Library/Application Support/minecraft/mods"
 
-**Mod basics**
+**Mod Basics**
 
 - `Mod Release types:` Release, Beta, and Alpha.
 - `Mod dependencies:` Required and Optional
@@ -42,8 +63,8 @@ To get started make sure you have a [CursedForge API Key](https://docs.curseforg
 - `family:` Used to filter mods based on server type. Options are Forge, Fabric, and Bukkit
 - `release:` Default is Release, Used to allow for Beta and Alpha mod downloads.
 - `version:` Default is LATEST, but this is Minecraft VERSION. e.g. 1.18.2
-- `clearMods:` Default is false, allows CLI to remove all mods before downloading new Mods.
-- `downloadDependencies:` Default is True, this uses the mods required dependencies to download missing mods.
+- `clear:` Default is false, allows CLI to remove all mods before downloading new Mods.
+- `dependencies:` Default is True, this uses the mods required dependencies to download missing mods.
 - `debug:` Enable extra logging.
 
 ## JSON File usage:
@@ -55,7 +76,6 @@ To get started make sure you have a [CursedForge API Key](https://docs.curseforg
 ```
 
 **Field Description**
-
 
 - `name:` is currently unused, but can be used to document each entry.
 - `projectID:` is the id found on the CurseForge website for a particular mod
@@ -79,13 +99,13 @@ To get started make sure you have a [CursedForge API Key](https://docs.curseforg
   {
     "name": "Biomes o plenty",
     "projectID": "220318",
-    "fileName": "BiomesOPlenty-1.18.1-15.0.0.100-universal.jar",
+    "fileName": "BiomesOPlenty-1.18.2-15.0.0.100-universal.jar",
     "releaseType": "release"
   }
 ]
 ```
 
-### Manually Building and Testing
+## Manually Building and Testing:
 
 Make a `./.env` file in the root folder and add your forge key.
 
@@ -106,8 +126,6 @@ go build
 # . ./forgecli should now be available to be used.
 ```
 
-### TODO List
+## TODO List:
 
-- Update and proof read documentation
-- Add normal info logging. Currently the app runs silent without -debug
-- add fileName filter from json mods. Currently we have no method to pin versions
+- add fileName filter from json mods. Currently we have no method to pin versions.

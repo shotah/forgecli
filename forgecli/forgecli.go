@@ -33,7 +33,7 @@ type appEnv struct {
 	projectIDs           string
 	downloadDependencies bool
 	clearMods            bool
-	modfamily            string
+	modfamily            FamilyType
 	modReleaseType       ReleaseType
 	destination          string
 	modsFromJSON         JSONMods
@@ -55,13 +55,19 @@ func (app *appEnv) fromArgs(args []string) error {
 	fl.BoolVar(&app.downloadDependencies, "dependencies", true, "Download Mods Dependencies")
 	fl.BoolVar(&app.clearMods, "clear", false, "Clear Mods from destination (mods folder)")
 	fl.BoolVar(&app.isDebug, "debug", false, "enable debug logrusging")
-	fl.StringVar(&app.modfamily, "family", "", "Minecraft type: Vanilla, Fabric, Forge, Bukkit")
 	fl.StringVar(&app.projectIDs, "projects", "", "Forge Project IDs separated by commas 12345,67890")
 	inputReleaseType := fl.String("release", "release", "Mods release type, release, beta, alpha")
-	app.modReleaseType = releaseLookup[*inputReleaseType]
+	inputFamily := fl.String("family", "", "Minecraft type: Vanilla, Fabric, Forge, Bukkit")
 
+	// Parsing the Args before they can be used
 	if err := fl.Parse(args); err != nil {
 		return err
+	}
+
+	// Type Conversions
+	app.modReleaseType = releaseLookup[*inputReleaseType]
+	if len(*inputFamily) > 0 {
+		app.modfamily = familyTypeLookup[*inputFamily]
 	}
 
 	// Setting up logrus
@@ -69,6 +75,7 @@ func (app *appEnv) fromArgs(args []string) error {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
+	// Checking for Required Fields
 	if app.projectIDs == "" && app.jsonFile == "" {
 		fmt.Fprintf(os.Stderr, "Did not receive Project IDs to Download.\n")
 		fl.Usage()
@@ -79,7 +86,7 @@ func (app *appEnv) fromArgs(args []string) error {
 }
 
 func (app *appEnv) run() error {
-	logrus.Debug("Starting Run")
+	logrus.Info("Starting Forge Mod Lookup")
 	app.SetForgeAPIKey()
 
 	app.GetMCVersion()
@@ -96,7 +103,8 @@ func (app *appEnv) run() error {
 
 	app.PrepareDestinationFolder()
 	app.DownloadMods()
-	logrus.Debug("Ending Run")
+	app.PrintDestinationFiles()
+	logrus.Info("Download Complete.")
 	return nil
 }
 
@@ -125,7 +133,8 @@ func (app *appEnv) GetModsByProjectIDs() {
 	projectIDs := strings.Split(app.projectIDs, ",")
 	for _, projectID := range projectIDs {
 		logrus.Debugf("Getting Mod: %s", projectID)
-		app.GetModsFromForge(projectID, app.modReleaseType)
+		err := app.GetModsFromForge(projectID, app.modReleaseType)
+		check(err)
 	}
 }
 
@@ -140,9 +149,10 @@ func (app *appEnv) GetModsByJSONFile() {
 		if fileMod.ReleaseType != "" {
 			releaseType = releaseLookup[fileMod.ReleaseType]
 		} else {
-			releaseType = releaseLookup["release"]
+			releaseType = app.modReleaseType
 		}
-		app.GetModsFromForge(fileMod.ProjectID, releaseType)
+		err := app.GetModsFromForge(fileMod.ProjectID, releaseType)
+		check(err)
 	}
 }
 
@@ -154,14 +164,15 @@ func (app *appEnv) GetModsDependencies() error {
 		for _, modDep := range mod.Dependencies {
 			if modDep.RelationType == 3 {
 				logrus.Debugf("Getting Mod dependency: %s", strconv.Itoa(modDep.ModID))
-				app.GetModsFromForge(strconv.Itoa(modDep.ModID), releaseLookup["release"])
+				err := app.GetModsFromForge(strconv.Itoa(modDep.ModID), releaseLookup["release"])
+				check(err)
 			}
 		}
 	}
 	return nil
 }
 
-func (app *appEnv) GetModsFromForge(modID string, releaseType ReleaseType) {
+func (app *appEnv) GetModsFromForge(modID string, releaseType ReleaseType) error {
 	var resp ForgeMods
 	pageIndex := 0
 	pageSize := 999
@@ -169,7 +180,7 @@ func (app *appEnv) GetModsFromForge(modID string, releaseType ReleaseType) {
 		"https://api.curseforge.com/v1/mods/%s/files?gameVersionTypeID=%d&index=%d&pageSize=%d",
 		modID, app.forgeGameVersionType, pageIndex, pageSize,
 	)
-	err := app.fetchforgeAPIJSON(url, &resp)
+	err := app.FetchForgeAPIJSON(url, &resp)
 	check(err)
 
 	foundID := 0
@@ -180,8 +191,12 @@ func (app *appEnv) GetModsFromForge(modID string, releaseType ReleaseType) {
 			foundMod = currMod
 		}
 	}
+	if foundID == 0 {
+		return fmt.Errorf("could not find %s for minecraft version: %s or family: %s", modID, app.version, app.modfamily)
+	}
 	app.modsToDownload[foundID] = foundMod
-	logrus.Debugf("Found Lastest FileID: %d for Mod: %s", foundID, modID)
+	logrus.Infof("Found Lastest FileID: %d for Mod: %s", foundID, modID)
+	return nil
 }
 
 func (app *appEnv) ModFilter(currMod ForgeMod) bool {
@@ -199,7 +214,7 @@ func (app *appEnv) ModFilter(currMod ForgeMod) bool {
 
 func (app *appEnv) GetMCVersion() error {
 	var resp MCVersionResponse
-	if err := app.fetchJSON(MinecraftVersionURL, &resp); err != nil {
+	if err := app.FetchJSON(MinecraftVersionURL, &resp); err != nil {
 		return fmt.Errorf("could not get minecraft version from:\n%s", MinecraftVersionURL)
 	}
 	if app.version == "" {
@@ -223,15 +238,16 @@ func (app *appEnv) GetVersionTypeNumber() error {
 	// Forge has a specific format to validate Minecraft 1.17
 	shortNumber := strings.Join(strings.Split(app.version, ".")[:2], ".")
 	forgeVersionName := "Minecraft " + shortNumber
+	logrus.Debugf("Fetching VersionType for MC version: %s, %s", forgeVersionName, ForgeVersionTypeURL)
 
 	var resp ForgeVersions
-	if err := app.fetchforgeAPIJSON(ForgeVersionTypeURL, &resp); err != nil {
+	if err := app.FetchForgeAPIJSON(ForgeVersionTypeURL, &resp); err != nil {
 		return err
 	}
 	for _, v := range resp.Data {
 		if v.Name == forgeVersionName {
-			returnGameVersionType := v.ID
-			app.forgeGameVersionType = returnGameVersionType
+			app.forgeGameVersionType = v.ID
+			logrus.Debugf("found VersionType: %d", v.ID)
 			return nil
 		}
 	}
@@ -241,7 +257,7 @@ func (app *appEnv) GetVersionTypeNumber() error {
 
 func (app *appEnv) DownloadMods() error {
 	for _, mod := range app.modsToDownload {
-		if err := app.fetchAndSave(mod.DownloadURL, mod.Filename); err != nil {
+		if err := app.FetchAndSave(mod.DownloadURL, mod.Filename); err != nil {
 			return err
 		}
 	}
