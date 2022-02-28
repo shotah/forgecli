@@ -54,7 +54,7 @@ func (app *appEnv) fromArgs(args []string) error {
 	fl.StringVar(&app.version, "version", "", "Minecraft version you are installing")
 	fl.BoolVar(&app.downloadDependencies, "dependencies", true, "Download Mods Dependencies")
 	fl.BoolVar(&app.clearMods, "clear", false, "Clear Mods from destination (mods folder)")
-	fl.BoolVar(&app.isDebug, "debug", false, "enable debug logrusging")
+	fl.BoolVar(&app.isDebug, "debug", false, "enable debug logging")
 	fl.StringVar(&app.projectIDs, "projects", "", "Forge Project IDs separated by commas 12345,67890")
 	inputReleaseType := fl.String("release", "release", "Mods release type, release, beta, alpha")
 	inputFamily := fl.String("family", "", "Minecraft type: Vanilla, Fabric, Forge, Bukkit")
@@ -204,35 +204,27 @@ func (app *appEnv) GetModsFromForge(modToGet JSONMod, releaseType ReleaseType) e
 }
 
 func (app *appEnv) ModFilter(currMod ForgeMod, modToGet JSONMod) bool {
-	// Filtering on Version, Filename, and Family
-	if modToGet.Filename != "" && app.modfamily != "" {
-		if containsPrefix(currMod.GameVersions, string(app.version)) && contains(currMod.GameVersions, string(app.modfamily)) && currMod.Filename == modToGet.Filename {
-			return true
-		}
-		return false
+	var results []bool
+	// Filtering on Filename Only
+	if modToGet.Filename != "" {
+		return strings.EqualFold(currMod.Filename, modToGet.Filename)
 	}
 
-	// Filtering on Version and Family
-	if app.modfamily != "" && modToGet.Filename == "" {
-		if containsPrefix(currMod.GameVersions, string(app.version)) && contains(currMod.GameVersions, string(app.modfamily)) {
-			return true
-		}
-		return false
+	// Apply mod family filter
+	if app.modfamily != "" {
+		result := contains(currMod.GameVersions, string(app.modfamily))
+		results = append(results, result)
 	}
 
-	// Filtering on Version and Filename
-	if modToGet.Filename != "" && app.modfamily == "" {
-		if containsPrefix(currMod.GameVersions, string(app.version)) && currMod.Filename == modToGet.Filename {
-			return true
-		}
-		return false
+	// Apply Version filter
+	if modToGet.Version != "" {
+		result := containsPrefix(currMod.GameVersions, string(modToGet.Version))
+		results = append(results, result)
+	} else {
+		result := containsPrefix(currMod.GameVersions, string(app.version))
+		results = append(results, result)
 	}
-
-	// Filter on just Version
-	if containsPrefix(currMod.GameVersions, string(app.version)) {
-		return true
-	}
-	return false
+	return allTrue(results)
 }
 
 func (app *appEnv) GetMCVersion() error {
