@@ -132,8 +132,10 @@ func (app *appEnv) GetModsByProjectIDs() {
 	}
 	projectIDs := strings.Split(app.projectIDs, ",")
 	for _, projectID := range projectIDs {
-		logrus.Debugf("Getting Mod: %s", projectID)
-		err := app.GetModsFromForge(projectID, app.modReleaseType)
+		var convertedJSONMod JSONMod
+		convertedJSONMod.ProjectID = projectID
+		logrus.Debugf("Getting Mod: %s", convertedJSONMod.ProjectID)
+		err := app.GetModsFromForge(convertedJSONMod, app.modReleaseType)
 		check(err)
 	}
 }
@@ -151,7 +153,7 @@ func (app *appEnv) GetModsByJSONFile() {
 		} else {
 			releaseType = app.modReleaseType
 		}
-		err := app.GetModsFromForge(fileMod.ProjectID, releaseType)
+		err := app.GetModsFromForge(fileMod, releaseType)
 		check(err)
 	}
 }
@@ -163,8 +165,10 @@ func (app *appEnv) GetModsDependencies() error {
 	for _, mod := range app.modsToDownload {
 		for _, modDep := range mod.Dependencies {
 			if modDep.RelationType == 3 {
-				logrus.Debugf("Getting Mod dependency: %s", strconv.Itoa(modDep.ModID))
-				err := app.GetModsFromForge(strconv.Itoa(modDep.ModID), releaseLookup["release"])
+				var convertedJSONMod JSONMod
+				convertedJSONMod.ProjectID = strconv.Itoa(modDep.ModID)
+				logrus.Debugf("Getting Mod dependency: %s", convertedJSONMod.ProjectID)
+				err := app.GetModsFromForge(convertedJSONMod, releaseLookup["release"])
 				check(err)
 			}
 		}
@@ -172,13 +176,13 @@ func (app *appEnv) GetModsDependencies() error {
 	return nil
 }
 
-func (app *appEnv) GetModsFromForge(modID string, releaseType ReleaseType) error {
+func (app *appEnv) GetModsFromForge(modToGet JSONMod, releaseType ReleaseType) error {
 	var resp ForgeMods
 	pageIndex := 0
 	pageSize := 999
 	url := fmt.Sprintf(
 		"https://api.curseforge.com/v1/mods/%s/files?gameVersionTypeID=%d&index=%d&pageSize=%d",
-		modID, app.forgeGameVersionType, pageIndex, pageSize,
+		modToGet.ProjectID, app.forgeGameVersionType, pageIndex, pageSize,
 	)
 	err := app.FetchForgeAPIJSON(url, &resp)
 	check(err)
@@ -186,27 +190,46 @@ func (app *appEnv) GetModsFromForge(modID string, releaseType ReleaseType) error
 	foundID := 0
 	var foundMod ForgeMod
 	for _, currMod := range resp.Data {
-		if currMod.ID > foundID && app.ModFilter(currMod) {
+		if currMod.ID > foundID && app.ModFilter(currMod, modToGet) {
 			foundID = currMod.ID
 			foundMod = currMod
 		}
 	}
 	if foundID == 0 {
-		return fmt.Errorf("could not find %s for minecraft version: %s or family: %s", modID, app.version, app.modfamily)
+		return fmt.Errorf("could not find %s for minecraft version: %s or family: %s", modToGet.ProjectID, app.version, app.modfamily)
 	}
 	app.modsToDownload[foundID] = foundMod
-	logrus.Infof("Found Lastest FileID: %d for Mod: %s", foundID, modID)
+	logrus.Infof("Found Lastest FileID: %d for Mod: %s", foundID, modToGet.ProjectID)
 	return nil
 }
 
-func (app *appEnv) ModFilter(currMod ForgeMod) bool {
-	if app.modfamily != "" {
-		if contains(currMod.GameVersions, string(app.version)) && contains(currMod.GameVersions, string(app.modfamily)) {
+func (app *appEnv) ModFilter(currMod ForgeMod, modToGet JSONMod) bool {
+	// Filtering on Version, Filename, and Family
+	if modToGet.Filename != "" && app.modfamily != "" {
+		if containsPrefix(currMod.GameVersions, string(app.version)) && contains(currMod.GameVersions, string(app.modfamily)) && currMod.Filename == modToGet.Filename {
 			return true
 		}
 		return false
 	}
-	if contains(currMod.GameVersions, string(app.version)) {
+
+	// Filtering on Version and Family
+	if app.modfamily != "" && modToGet.Filename == "" {
+		if containsPrefix(currMod.GameVersions, string(app.version)) && contains(currMod.GameVersions, string(app.modfamily)) {
+			return true
+		}
+		return false
+	}
+
+	// Filtering on Version and Filename
+	if modToGet.Filename != "" && app.modfamily == "" {
+		if containsPrefix(currMod.GameVersions, string(app.version)) && currMod.Filename == modToGet.Filename {
+			return true
+		}
+		return false
+	}
+
+	// Filter on just Version
+	if containsPrefix(currMod.GameVersions, string(app.version)) {
 		return true
 	}
 	return false
