@@ -53,7 +53,7 @@ func (app *appEnv) fromArgs(args []string) error {
 	fl.StringVar(&app.destination, "destination", "", "destination directory for mods")
 	fl.StringVar(&app.version, "version", "", "Minecraft version you are installing")
 	fl.BoolVar(&app.downloadDependencies, "dependencies", true, "Download Mods Dependencies")
-	fl.BoolVar(&app.clearMods, "clear", true, "Clear Mods from destination (mods folder)")
+	fl.BoolVar(&app.clearMods, "clear", false, "Clear Mods from destination (mods folder)")
 	fl.BoolVar(&app.isDebug, "debug", false, "enable debug logrusging")
 	fl.StringVar(&app.modfamily, "family", "", "Minecraft type: Vanilla, Fabric, Forge, Bukkit")
 	fl.StringVar(&app.projectIDs, "projects", "", "Forge Project IDs separated by commas 12345,67890")
