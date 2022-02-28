@@ -36,6 +36,15 @@ func contains(s []string, e string) bool {
 	return false
 }
 
+func allTrue(s []bool) bool {
+	for _, a := range s {
+		if !a {
+			return false
+		}
+	}
+	return true
+}
+
 func containsPrefix(s []string, e string) bool {
 	for _, a := range s {
 		logrus.Debugf("Checking has prefix: %s for Mod: %s", a, e)

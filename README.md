@@ -82,6 +82,8 @@ To get started make sure you have a [CursedForge API Key](https://docs.curseforg
 - `projectID:` is the id found on the CurseForge website for a particular mod
 - `releaseType:` Type corresponds to forge's R, B, A icon for each file. Default Release, options are (release|beta|alpha).
 - `fileName:` is used for version pinning if latest file will not work for you.
+- `version:` used to override when Mojang releases minor updates and mods have not updated.
+  - Does not currently apply to dependencies of Mod. e.g. Error if dependency does not support the main MC version.
 
 **Example json File Format**
 
@@ -95,7 +97,8 @@ To get started make sure you have a [CursedForge API Key](https://docs.curseforg
   {
     "name": "fabric voice mod",
     "projectID": "416089",
-    "releaseType": "beta"
+    "releaseType": "beta",
+    "version": "1.18.1"
   },
   {
     "name": "Biomes o plenty",
@@ -132,3 +135,4 @@ go build
 - ~~add fileName filter from json mods. Currently we have no method to pin versions.~~
 - ~~add partial matching for versions 1.18 to pull 1.18.1 and 1.18.2~~
 - ~~better output for normal use~~
+- ~~add per version into json file~~
