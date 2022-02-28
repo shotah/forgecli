@@ -36,6 +36,18 @@ func contains(s []string, e string) bool {
 	return false
 }
 
+func containsPrefix(s []string, e string) bool {
+	for _, a := range s {
+		logrus.Debugf("Checking has prefix: %s for Mod: %s", a, e)
+		if strings.HasPrefix(a, e) {
+			logrus.Debug("true")
+			return true
+		}
+	}
+	logrus.Debug("false")
+	return false
+}
+
 func (app *appEnv) GetTargetDirectory() {
 	if app.destination != "" {
 		return
@@ -52,7 +64,8 @@ func (app *appEnv) GetTargetDirectory() {
 	case "linux":
 		app.destination = fmt.Sprintf("%s/Library/Application Support/minecraft/mods", user.HomeDir)
 	default:
-		log.Fatalf(fmt.Sprintf("%s does not have a default directory, please provide target directory", os))
+		err := fmt.Errorf("%s does not have a default directory, please provide target directory", os)
+		check(err)
 	}
 }
 

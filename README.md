@@ -62,7 +62,8 @@ To get started make sure you have a [CursedForge API Key](https://docs.curseforg
 - `destination:` Default is OS Client Mod folder, Target folder for the downloaded mods.
 - `family:` Used to filter mods based on server type. Options are Forge, Fabric, and Bukkit
 - `release:` Default is Release, Used to allow for Beta and Alpha mod downloads.
-- `version:` Default is LATEST, but this is Minecraft VERSION. e.g. 1.18.2
+- `version:` Default is LATEST, but this is Minecraft VERSION. e.g. 1.18.2,
+  - PARTIAL matching is enabled, e.g. use 1.18 to pull back 1.18.2, 1.18.1, 1.18 mods
 - `clear:` Default is false, allows CLI to remove all mods before downloading new Mods.
 - `dependencies:` Default is True, this uses the mods required dependencies to download missing mods.
 - `debug:` Enable extra logging.
@@ -72,7 +73,7 @@ To get started make sure you have a [CursedForge API Key](https://docs.curseforg
 **Basic Usage Command**
 
 ```bash
-. ./forgecli.exe -forgekey '$2a$10...' -file "forgeMods.json" -family "fabric" -debug
+. ./forgecli.exe -forgekey '$2a$10...' -file "forgeMods.json" -family "fabric"
 ```
 
 **Field Description**
@@ -128,4 +129,6 @@ go build
 
 ## TODO List:
 
-- add fileName filter from json mods. Currently we have no method to pin versions.
+- ~~add fileName filter from json mods. Currently we have no method to pin versions.~~
+- ~~add partial matching for versions 1.18 to pull 1.18.1 and 1.18.2~~
+- ~~better output for normal use~~
