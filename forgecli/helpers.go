@@ -15,9 +15,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type error interface {
+	Error() string
+}
+
 func check(e error) {
 	if e != nil {
-		panic(e)
+		logrus.Error(e.Error())
+		logrus.Error("Exiting...")
+		os.Exit(1)
 	}
 }
 
@@ -30,7 +36,7 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func (app *appEnv) osTargetDirectory() {
+func (app *appEnv) GetTargetDirectory() {
 	if app.destination != "" {
 		return
 	}
@@ -50,7 +56,7 @@ func (app *appEnv) osTargetDirectory() {
 	}
 }
 
-func (app *appEnv) ensureDestination() {
+func (app *appEnv) EnsureDestination() {
 	logrus.Debugf("Making Folder if not exist: %s", app.destination)
 	err := os.MkdirAll(app.destination, os.ModeDir)
 	if err != nil && !os.IsExist(err) {
@@ -59,17 +65,17 @@ func (app *appEnv) ensureDestination() {
 }
 
 func (app *appEnv) PrepareDestinationFolder() {
-	app.osTargetDirectory()
+	app.GetTargetDirectory()
 	logrus.Debugf("Mod Destination is set to: %s", app.destination)
 	if app.clearMods {
 		logrus.Debugf("Removing contents of: %s", app.destination)
 		err := os.RemoveAll(app.destination)
 		check(err)
 	}
-	app.ensureDestination()
+	app.EnsureDestination()
 }
 
-func (app *appEnv) fetchforgeAPIJSON(url string, data interface{}) error {
+func (app *appEnv) FetchForgeAPIJSON(url string, data interface{}) error {
 	logrus.Debugf("Fetching: %s", url)
 	req, err := http.NewRequest("GET", url, nil)
 	check(err)
@@ -83,7 +89,7 @@ func (app *appEnv) fetchforgeAPIJSON(url string, data interface{}) error {
 	return json.NewDecoder(resp.Body).Decode(data)
 }
 
-func (app *appEnv) fetchJSON(url string, data interface{}) error {
+func (app *appEnv) FetchJSON(url string, data interface{}) error {
 	logrus.Debugf("Fetching JSON: %s", url)
 	resp, err := app.hc.Get(url)
 	check(err)
@@ -106,9 +112,16 @@ func (app *appEnv) LoadModsFromJSON() {
 	app.modsFromJSON = result
 }
 
-func (app *appEnv) fetchAndSave(url, destPath string) error {
-	logrus.Debugf("Fetching and Saving: %s", url)
-	resp, err := app.hc.Get(url)
+func (app *appEnv) FetchAndSave(url, destPath string) error {
+	logrus.Infof("Downloading: %s", url)
+
+	req, err := http.NewRequest("GET", url, nil)
+	check(err)
+	req.Header = http.Header{
+		"Accept":    []string{"application/json"},
+		"x-api-key": []string{app.forgeKey},
+	}
+	resp, err := app.hc.Do(req)
 	check(err)
 	defer resp.Body.Close()
 
@@ -117,4 +130,16 @@ func (app *appEnv) fetchAndSave(url, destPath string) error {
 
 	_, err = io.Copy(f, resp.Body)
 	return err
+}
+
+func (app *appEnv) PrintDestinationFiles() {
+	files, err := ioutil.ReadDir(app.destination)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	logrus.Infof("Files in Destination Folder:")
+	for _, file := range files {
+		logrus.Infof("  %s  ", file.Name())
+	}
 }

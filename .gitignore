@@ -25,3 +25,4 @@
 ### Personal Development Script and Environment ###
 personal-build-and-develop.*
 .env
+test.json

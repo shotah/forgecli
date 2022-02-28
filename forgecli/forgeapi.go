@@ -28,6 +28,25 @@ var releaseLookup = map[string]ReleaseType{
 	"alpha":   Alpha,
 }
 
+// FamilyType string declaration
+type FamilyType string
+
+const (
+	// Fabric used for validating we are using the correct family types
+	Fabric FamilyType = "fabric"
+	// Bukkit used for validating we are using the correct family types
+	Bukkit FamilyType = "bukkit"
+	// Forge used for validating we are using the correct family types
+	Forge FamilyType = "forge"
+)
+
+// familyTypeLookup used when accepting strings and converting to ints
+var familyTypeLookup = map[string]FamilyType{
+	"fabric": Fabric,
+	"bukkit": Bukkit,
+	"forge":  Forge,
+}
+
 // ForgePagination was to be used with Pagination, currently not used
 type ForgePagination struct {
 	Index       int `json:"index"`

@@ -7,9 +7,11 @@ import (
 	"testing"
 
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 )
 
 func LoadDotEnv() {
+	logrus.SetLevel(logrus.DebugLevel)
 	if os.Getenv("FORGEKEY") == "" {
 		err := godotenv.Load("../.env")
 		check(err)
@@ -25,6 +27,7 @@ func TestCLIReturnsError(t *testing.T) {
 	}
 }
 
+// Test will fail as MC receives version updates
 func TestGetVersionTypeNumber(t *testing.T) {
 	LoadDotEnv()
 	var app appEnv
@@ -83,7 +86,7 @@ func TestFetchforgeAPIJSON(t *testing.T) {
 	app.forgeKey = os.Getenv("FORGEKEY")
 	var resp ForgeMods
 	url := "https://api.curseforge.com/v1/mods/306612/files?gameVersionTypeID=73250&index=0&pageSize=3"
-	if err := app.fetchforgeAPIJSON(url, &resp); err != nil {
+	if err := app.FetchForgeAPIJSON(url, &resp); err != nil {
 		t.Errorf("Test failed, by throwing error")
 	}
 	fmt.Println(resp.Data[0].DisplayName)
@@ -93,7 +96,7 @@ func TestGetMCVersionNoInput(t *testing.T) {
 	var app appEnv
 	app.hc = *http.DefaultClient
 	app.version = ""
-	expected := "1.18.1"
+	expected := "1.18.2"
 	app.GetMCVersion()
 	if app.version != expected {
 		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, app.version)
