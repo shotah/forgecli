@@ -1,0 +1,29 @@
+name: Bug Report
+description: File a bug report
+labels:
+  - bug
+  - status/needs triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+        Please double check some things first:
+        - Is this bug happening after the `[init]` prefixed logs and after the log that says "Starting the Minecraft server"? If so, please report the bug with Mojang or the respective server provider.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Describe the problem
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Container logs
+      description: |
+        Please provide container logs from the start of the container, which will be the ones prefixed with `[init]`. It is even better if you can set the variable `DEBUG` to "true" and provide those debug container logs.
+      value: |
+        ```
+        Paste logs here
+        ```

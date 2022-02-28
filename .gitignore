@@ -13,3 +13,15 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+
+### VisualStudioCode ###
+.vscode*
+
+### macOS ###
+# General
+.DS_Store
+
+### Personal Development Script and Environment ###
+personal-build-and-develop.*
+.env
