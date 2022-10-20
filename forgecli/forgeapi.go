@@ -1,3 +1,4 @@
+// Package forgecli is main cli
 package forgecli
 
 // MinecraftGameID Default Minecraft Game ID for Forge

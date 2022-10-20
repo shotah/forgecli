@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -15,11 +14,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type error interface {
+type forgecliError interface {
 	Error() string
 }
 
-func check(e error) {
+func check(e forgecliError) {
 	if e != nil {
 		logrus.Error(e.Error())
 		logrus.Error("Exiting...")
@@ -97,7 +96,7 @@ func (app *appEnv) PrepareDestinationFolder() {
 	app.EnsureDestination()
 }
 
-func (app *appEnv) FetchForgeAPIJSON(url string, data interface{}) error {
+func (app *appEnv) FetchForgeAPIJSON(url string, data interface{}) forgecliError {
 	logrus.Debugf("Fetching: %s", url)
 	req, err := http.NewRequest("GET", url, nil)
 	check(err)
@@ -111,7 +110,7 @@ func (app *appEnv) FetchForgeAPIJSON(url string, data interface{}) error {
 	return json.NewDecoder(resp.Body).Decode(data)
 }
 
-func (app *appEnv) FetchJSON(url string, data interface{}) error {
+func (app *appEnv) FetchJSON(url string, data interface{}) forgecliError {
 	logrus.Debugf("Fetching JSON: %s", url)
 	resp, err := app.hc.Get(url)
 	check(err)
@@ -127,14 +126,14 @@ func (app *appEnv) LoadModsFromJSON() {
 	jsonFile, err := os.Open(app.jsonFile)
 	check(err)
 	defer jsonFile.Close()
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, _ := io.ReadAll(jsonFile)
 	var result JSONMods
 	json.Unmarshal([]byte(byteValue), &result)
 	logrus.Debugf("Pulled from json file: %s", result)
 	app.modsFromJSON = result
 }
 
-func (app *appEnv) FetchAndSave(url, destPath string) error {
+func (app *appEnv) FetchAndSave(url, destPath string) forgecliError {
 	logrus.Infof("Downloading: %s", url)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -155,7 +154,7 @@ func (app *appEnv) FetchAndSave(url, destPath string) error {
 }
 
 func (app *appEnv) PrintDestinationFiles() {
-	files, err := ioutil.ReadDir(app.destination)
+	files, err := os.ReadDir(app.destination)
 	if err != nil {
 		log.Fatal(err)
 	}
