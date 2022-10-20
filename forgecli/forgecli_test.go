@@ -96,7 +96,7 @@ func TestGetMCVersionNoInput(t *testing.T) {
 	var app appEnv
 	app.hc = *http.DefaultClient
 	app.version = ""
-	expected := "1.18.2"
+	expected := "1.19.2"
 	app.GetMCVersion()
 	if app.version != expected {
 		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, app.version)
