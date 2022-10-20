@@ -11,8 +11,9 @@ build :
 .PHONY : lint
 lint : 
 	golint ./...
-	golangci-lint --version
-	golangci-lint
+	gofmt -w -s .
+	revive -config revive.toml ./...
+	staticcheck ./...
 
 .PHONY: test
 test:

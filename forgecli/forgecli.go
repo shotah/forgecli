@@ -176,7 +176,7 @@ func (app *appEnv) GetModsDependencies() error {
 	return nil
 }
 
-func (app *appEnv) GetModsFromForge(modToGet JSONMod, releaseType ReleaseType) error {
+func (app *appEnv) GetModsFromForge(modToGet JSONMod, _ ReleaseType) error {
 	var resp ForgeMods
 	pageIndex := 0
 	pageSize := 999

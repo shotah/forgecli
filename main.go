@@ -1,3 +1,4 @@
+// Package main function only to call forgecli module
 package main
 
 import (
