@@ -2,6 +2,7 @@ package forgecli
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"log"
@@ -116,6 +117,16 @@ func (app *appEnv) FetchJSON(url string, data interface{}) forgecliError {
 	check(err)
 	defer resp.Body.Close()
 	return json.NewDecoder(resp.Body).Decode(data)
+}
+
+func (app *appEnv) FetchXML(url string, data interface{}) forgecliError {
+	logrus.Debugf("Fetching XML: %s", url)
+	resp, err := app.hc.Get(url)
+	check(err)
+	defer resp.Body.Close()
+	respBody, err := io.ReadAll(resp.Body)
+	check(err)
+	return xml.Unmarshal(respBody, &data)
 }
 
 func (app *appEnv) LoadModsFromJSON() {
