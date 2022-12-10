@@ -5,25 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 )
-
-// CLI Main Module Entrypoint
-func CLI(args []string) int {
-	var app appEnv
-	err := app.fromArgs(args)
-	if err != nil {
-		return 2
-	}
-	if err := app.run(); err != nil {
-		fmt.Fprintf(os.Stderr, "Runtime error: %v\n", err)
-		return 1
-	}
-	return 0
-}
 
 type appEnv struct {
 	hc                   http.Client
@@ -41,6 +28,20 @@ type appEnv struct {
 	forgeGameVersionType int
 	modsToDownload       map[int]ForgeMod
 	isDebug              bool
+}
+
+// CLI Main Module Entrypoint
+func CLI(args []string) int {
+	var app appEnv
+	err := app.fromArgs(args)
+	if err != nil {
+		return 2
+	}
+	if err := app.run(); err != nil {
+		fmt.Fprintf(os.Stderr, "Runtime error: %v\n", err)
+		return 1
+	}
+	return 0
 }
 
 func (app *appEnv) fromArgs(args []string) error {
@@ -281,25 +282,39 @@ func (app *appEnv) DownloadMods() error {
 	return nil
 }
 
+func (app *appEnv) ValidateJavaInstallation() error {
+	javaVersion, err := exec.Command("java", "-version").CombinedOutput()
+	if err != nil {
+		logrus.Debugln("java version not found")
+		return fmt.Errorf("unable to find java, please install and try again")
+	}
+	logrus.Debugf("java version found: %s", javaVersion)
+	return nil
+}
+
 func (app *appEnv) FabricClientInstaller() error {
 	var fabricXMLResponse XMLFabric
 	if err := app.FetchXML(FabricMetadataURL, &fabricXMLResponse); err != nil {
-		return fmt.Errorf("could not get fabric version from:\n%s", MinecraftVersionURL)
+		return fmt.Errorf("could not get fabric version from:\n%s", FabricMetadataURL)
 	}
+	latestFabricVersion := fabricXMLResponse.Versioning.Latest
 	if app.version == "" {
 		// Install command
 		// java -jar './fabric-installer-0.11.1.jar' client
-		logrus.Debugf("java -jar './fabric-installer-%s.jar' client", fabricXMLResponse.Versioning.Latest)
+		logrus.Debugf("java -jar './fabric-installer-%s.jar' client", latestFabricVersion)
 	} else {
 		// Install command.. etc...
 		// java -jar './fabric-installer-0.11.1.jar' client -mcversion 1.18.1
 		// java -jar './fabric-installer-0.11.1.jar' client -mcversion app.version
-		logrus.Debugf("java -jar './fabric-installer-%s.jar' client -mcversion %s", fabricXMLResponse.Versioning.Latest, app.version)
+		logrus.Debugf("java -jar './fabric-installer-%s.jar' client -mcversion %s", latestFabricVersion, app.version)
 	}
 	return nil
 }
 
 func (app *appEnv) ClientInstaller() error {
+	if err := app.ValidateJavaInstallation(); err != nil {
+		return err
+	}
 	if app.modfamily == Fabric {
 		if err := app.FabricClientInstaller(); err != nil {
 			return err

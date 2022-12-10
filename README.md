@@ -136,8 +136,8 @@ go build
 - Add call to get the file and get the latest version
 - Add call to download the Jar from the server
   - AKA from here: `https://maven.fabricmc.net/net/fabricmc/fabric-installer/0.11.1/fabric-installer-0.11.1.jar`
-- Add checker to make sure java is installed.
-  - Give user message on how to install Java.
+- ~~Add checker to make sure java is installed.~~
+  - ~~Give user message on how to install Java.~~ <- NOT GONNA DO THIS
 - Add install call of the jar:
   - AKA command: `java -jar './fabric-installer-0.11.1.jar' client`
 - Add cli command to Enable feature from the CLI

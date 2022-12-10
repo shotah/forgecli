@@ -136,7 +136,22 @@ func TestFabricClientInstallerLatestFabricVersion(t *testing.T) {
 	app.FabricClientInstaller()
 	rawOutput := strings.Trim(buf.String(), "\n")
 	output := rawOutput[strings.LastIndex(rawOutput, "=")+1:]
-	if output != expected {
+	if !strings.Contains(output, expected) {
+		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, output)
+	}
+}
+
+func TestValidateJavaInstallation(t *testing.T) {
+	var buf bytes.Buffer
+	logrus.SetOutput(&buf)
+	var app appEnv
+	if err := app.ValidateJavaInstallation(); err != nil {
+		t.Errorf("Test failed, expected: '%s', got:  '%s'", "nil", err)
+	}
+	expected := "java version found"
+	rawOutput := strings.Trim(buf.String(), "\n")
+	output := rawOutput[strings.LastIndex(rawOutput, "=")+1:]
+	if !strings.Contains(output, expected) {
 		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, output)
 	}
 }
