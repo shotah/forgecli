@@ -130,9 +130,13 @@ go build
 # . ./forgecli should now be available to be used.
 ```
 
-## TODO List:
+## TODO List
 
-- ~~add fileName filter from json mods. Currently we have no method to pin versions.~~
-- ~~add partial matching for versions 1.18 to pull 1.18.1 and 1.18.2~~
-- ~~better output for normal use~~
-- ~~add per version into json file~~
+- Add fabric xml download so we can parse latest version
+- Add call to get the file and get the latest version
+- Add call to download the Jar from the server
+  - AKA from here: `https://maven.fabricmc.net/net/fabricmc/fabric-installer/0.11.1/fabric-installer-0.11.1.jar`
+- Add checker to make sure java is installed.
+  - Give user message on how to install Java.
+- Add install call of the jar:
+  - AKA command: `java -jar './fabric-installer-0.11.1.jar' client`

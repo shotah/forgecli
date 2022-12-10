@@ -16,8 +16,8 @@ type fabricVersioning struct {
 }
 
 type fabricMetadata struct {
-	GroupId    string           `xml:"groupId"`
-	ArtifactId string           `xml:"artifactId"`
+	GroupID    string           `xml:"groupId"`
+	ArtifactID string           `xml:"artifactId"`
 	Versioning fabricVersioning `xml:"versioning"`
 }
 
