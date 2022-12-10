@@ -1,9 +1,11 @@
 package forgecli
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/joho/godotenv"
@@ -122,5 +124,19 @@ func TestGetMCVersionWithBadInput(t *testing.T) {
 	app.GetMCVersion()
 	if app.version != "" {
 		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, app.version)
+	}
+}
+
+func TestFabricClientInstallerLatestFabricVersion(t *testing.T) {
+	var buf bytes.Buffer
+	logrus.SetOutput(&buf)
+	var app appEnv
+	app.hc = *http.DefaultClient
+	expected := "\"java -jar './fabric-installer-0.11.1.jar' client\""
+	app.FabricClientInstaller()
+	rawOutput := strings.Trim(buf.String(), "\n")
+	output := rawOutput[strings.LastIndex(rawOutput, "=")+1:]
+	if output != expected {
+		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, output)
 	}
 }

@@ -132,7 +132,7 @@ go build
 
 ## TODO List
 
-- Add fabric xml download so we can parse latest version
+- ~~Add fabric xml download so we can parse latest version~~
 - Add call to get the file and get the latest version
 - Add call to download the Jar from the server
   - AKA from here: `https://maven.fabricmc.net/net/fabricmc/fabric-installer/0.11.1/fabric-installer-0.11.1.jar`
@@ -140,3 +140,5 @@ go build
   - Give user message on how to install Java.
 - Add install call of the jar:
   - AKA command: `java -jar './fabric-installer-0.11.1.jar' client`
+- Add cli command to Enable feature from the CLI
+- Revisit Chocolatey Package, and push back to chocolatey.org
