@@ -1,5 +1,7 @@
 package forgecli
 
+import "fmt"
+
 // MinecraftVersionURL URL to grab the json manifest
 const MinecraftVersionURL = "https://launchermeta.mojang.com/mc/game/version_manifest.json"
 
@@ -22,4 +24,26 @@ type MCVersion struct {
 type MCVersionResponse struct {
 	Latest   MCLatest    `json:"latest"`
 	Versions []MCVersion `json:"versions"`
+}
+
+func (app *appEnv) GetMCVersion() error {
+	var resp MCVersionResponse
+	if err := app.FetchJSON(MinecraftVersionURL, &resp); err != nil {
+		return fmt.Errorf("could not get minecraft version from:\n%s", MinecraftVersionURL)
+	}
+	if app.version == "" {
+		version := resp.Latest.Release
+		app.version = version
+		return nil
+	}
+	inputVersion := app.version
+	for _, v := range resp.Versions {
+		if v.ID == inputVersion {
+			returnVersion := v.ID
+			app.version = returnVersion
+			return nil
+		}
+	}
+	app.version = ""
+	return fmt.Errorf("could not find minecraft version: %s", inputVersion)
 }
