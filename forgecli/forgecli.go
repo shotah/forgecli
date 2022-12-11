@@ -5,11 +5,32 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 )
+
+type appEnv struct {
+	hc                      http.Client
+	jsonFile                string
+	forgeKey                string
+	version                 string
+	clientInstaller         bool
+	projectIDs              string
+	downloadDependencies    bool
+	clearMods               bool
+	modfamily               FamilyType
+	modReleaseType          ReleaseType
+	destination             string
+	modsFromJSON            JSONMods
+	forgeGameVersionType    int
+	modsToDownload          map[int]ForgeMod
+	clientInstallerVersion  string
+	clientInstallerFileName string
+	isDebug                 bool
+}
 
 // CLI Main Module Entrypoint
 func CLI(args []string) int {
@@ -25,23 +46,6 @@ func CLI(args []string) int {
 	return 0
 }
 
-type appEnv struct {
-	hc                   http.Client
-	jsonFile             string
-	forgeKey             string
-	version              string
-	projectIDs           string
-	downloadDependencies bool
-	clearMods            bool
-	modfamily            FamilyType
-	modReleaseType       ReleaseType
-	destination          string
-	modsFromJSON         JSONMods
-	forgeGameVersionType int
-	modsToDownload       map[int]ForgeMod
-	isDebug              bool
-}
-
 func (app *appEnv) fromArgs(args []string) error {
 	// Shallow copy of default client
 	app.hc = *http.DefaultClient
@@ -52,12 +56,13 @@ func (app *appEnv) fromArgs(args []string) error {
 	fl.StringVar(&app.forgeKey, "forgekey", "", "ForgeAPIKey used in Authentication with the Forge API")
 	fl.StringVar(&app.destination, "destination", "", "destination directory for mods")
 	fl.StringVar(&app.version, "version", "", "Minecraft version you are installing")
+	fl.BoolVar(&app.clientInstaller, "client", false, "Downloads and installs Client based on Family (if no family, no client install will be done)")
 	fl.BoolVar(&app.downloadDependencies, "dependencies", true, "Download Mods Dependencies")
 	fl.BoolVar(&app.clearMods, "clear", false, "Clear Mods from destination (mods folder)")
 	fl.BoolVar(&app.isDebug, "debug", false, "enable debug logging")
 	fl.StringVar(&app.projectIDs, "projects", "", "Forge Project IDs separated by commas 12345,67890")
 	inputReleaseType := fl.String("release", "release", "Mods release type, release, beta, alpha")
-	inputFamily := fl.String("family", "", "Minecraft type: Vanilla, Fabric, Forge, Bukkit")
+	inputFamily := fl.String("family", "", "Minecraft type: Fabric, Forge, Bukkit")
 
 	// Parsing the Args before they can be used
 	if err := fl.Parse(args); err != nil {
@@ -104,7 +109,9 @@ func (app *appEnv) run() error {
 	app.PrepareDestinationFolder()
 	app.DownloadMods()
 	app.PrintDestinationFiles()
-	logrus.Info("Download Complete.")
+	logrus.Info("Mods Download Complete.")
+
+	app.ClientInstaller()
 	return nil
 }
 
@@ -199,32 +206,38 @@ func (app *appEnv) GetModsFromForge(modToGet JSONMod, _ ReleaseType) error {
 		return fmt.Errorf("could not find %s for minecraft version: %s or family: %s", modToGet.ProjectID, app.version, app.modfamily)
 	}
 	app.modsToDownload[foundID] = foundMod
-	logrus.Infof("Found Lastest FileID: %d for Mod: %s", foundID, modToGet.ProjectID)
+	logrus.Infof("Found Latest FileID: %d for Mod: %s", foundID, modToGet.ProjectID)
 	return nil
 }
 
-func (app *appEnv) ModFilter(currMod ForgeMod, modToGet JSONMod) bool {
-	var results []bool
-	// Filtering on Filename Only
-	if modToGet.Filename != "" {
-		return strings.EqualFold(currMod.Filename, modToGet.Filename)
-	}
-
+func (app *appEnv) ModFamilyFilter(currMod ForgeMod) bool {
 	// Apply mod family filter
 	if app.modfamily != "" {
 		result := contains(currMod.GameVersions, string(app.modfamily))
-		results = append(results, result)
+		logrus.Debugf("Mod's family Filter Result: %t", result)
+		return result
 	}
+	return true
+}
 
+func (app *appEnv) ModVersionFilter(currMod ForgeMod, modToGet JSONMod) bool {
 	// Apply Version filter
+	modVersion := app.version
 	if modToGet.Version != "" {
-		result := containsPrefix(currMod.GameVersions, string(modToGet.Version))
-		results = append(results, result)
-	} else {
-		result := containsPrefix(currMod.GameVersions, string(app.version))
-		results = append(results, result)
+		modVersion = modToGet.Version
 	}
-	return allTrue(results)
+	logrus.Debugf("Mod's Game Version Filters: \n%s \n%s", currMod.GameVersions, string(modVersion))
+	result := contains(currMod.GameVersions, string(modVersion))
+	logrus.Debugf("Mod's Game Version Filter Result: %t", result)
+	return result
+}
+
+func (app *appEnv) ModFilter(currMod ForgeMod, modToGet JSONMod) bool {
+	// Filtering on Filename Only
+	if modToGet.Filename != "" {
+		return false
+	}
+	return app.ModFamilyFilter(currMod) && app.ModVersionFilter(currMod, modToGet)
 }
 
 func (app *appEnv) GetMCVersion() error {
@@ -272,9 +285,86 @@ func (app *appEnv) GetVersionTypeNumber() error {
 
 func (app *appEnv) DownloadMods() error {
 	for _, mod := range app.modsToDownload {
-		if err := app.FetchAndSave(mod.DownloadURL, mod.Filename); err != nil {
+		if err := app.FetchAndSave(mod.DownloadURL, mod.Filename, app.destination); err != nil {
 			return err
 		}
 	}
+	return nil
+}
+
+func (app *appEnv) ValidateJavaInstallation() error {
+	javaVersion, err := exec.Command("java", "-version").CombinedOutput()
+	if err != nil {
+		logrus.Debugln("java version not found")
+		return fmt.Errorf("unable to find java, please install and try again")
+	}
+	logrus.Debugf("java version found: %s", javaVersion)
+	return nil
+}
+
+func (app *appEnv) FabricClientInstallerVersion() error {
+	if app.clientInstallerVersion != "" {
+		return nil
+	}
+	var fabricXMLResponse XMLFabric
+	if err := app.FetchXML(FabricMetadataURL, &fabricXMLResponse); err != nil {
+		return fmt.Errorf("could not get fabric version from:\n%s", FabricMetadataURL)
+	}
+	app.clientInstallerVersion = fabricXMLResponse.Versioning.Latest
+	return nil
+}
+
+func (app *appEnv) FabricClientDownload() error {
+	app.FabricClientInstallerVersion()
+	app.clientInstallerFileName = fmt.Sprintf("fabric-installer-%s.jar", app.clientInstallerVersion)
+	clientDownloadURL := FabricAPIBaseURL + app.clientInstallerVersion + "/" + app.clientInstallerFileName
+	// download the client where you are running the code from:
+	err := app.FetchAndSave(clientDownloadURL, app.clientInstallerFileName, ".")
+	return err
+}
+
+func (app *appEnv) FabricClientRemoval() error {
+	// Validates file is downloaded
+	filePath := "./" + app.clientInstallerFileName
+	_, err := os.Stat(filePath)
+	if err != nil && !os.IsExist(err) {
+		return err
+	}
+
+	// Removes downloaded file:
+	logrus.Debugf("Removing test file: %s", filePath)
+	return os.Remove(filePath)
+}
+
+func (app *appEnv) FabricClientInstaller() error {
+	app.FabricClientDownload()
+	installCommands := []string{"-jar", app.clientInstallerFileName, "client"}
+	if app.version != "" {
+		installCommands = []string{"-jar", app.clientInstallerFileName, "client", "-mcversion", app.version}
+	}
+	logrus.Debugf("java %v", installCommands)
+	clientInstall, err := exec.Command("java", installCommands...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("fabric client install failed: %s", err)
+	}
+	logrus.Debugf("Install Output: %s", clientInstall)
+	app.FabricClientRemoval()
+	return nil
+}
+
+func (app *appEnv) ClientInstaller() error {
+	if !app.clientInstaller {
+		return nil
+	}
+	logrus.Info("Starting Client Installer")
+	if err := app.ValidateJavaInstallation(); err != nil {
+		return err
+	}
+	if app.modfamily == Fabric {
+		if err := app.FabricClientInstaller(); err != nil {
+			return err
+		}
+	}
+	logrus.Info("Finishing Client Installer")
 	return nil
 }

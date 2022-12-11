@@ -2,6 +2,7 @@ package forgecli
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"log"
@@ -32,27 +33,6 @@ func contains(s []string, e string) bool {
 			return true
 		}
 	}
-	return false
-}
-
-func allTrue(s []bool) bool {
-	for _, a := range s {
-		if !a {
-			return false
-		}
-	}
-	return true
-}
-
-func containsPrefix(s []string, e string) bool {
-	for _, a := range s {
-		logrus.Debugf("Checking has prefix: %s for Mod: %s", a, e)
-		if strings.HasPrefix(a, e) {
-			logrus.Debug("true")
-			return true
-		}
-	}
-	logrus.Debug("false")
 	return false
 }
 
@@ -118,6 +98,16 @@ func (app *appEnv) FetchJSON(url string, data interface{}) forgecliError {
 	return json.NewDecoder(resp.Body).Decode(data)
 }
 
+func (app *appEnv) FetchXML(url string, data interface{}) forgecliError {
+	logrus.Debugf("Fetching XML: %s", url)
+	resp, err := app.hc.Get(url)
+	check(err)
+	defer resp.Body.Close()
+	respBody, err := io.ReadAll(resp.Body)
+	check(err)
+	return xml.Unmarshal(respBody, &data)
+}
+
 func (app *appEnv) LoadModsFromJSON() {
 	if app.jsonFile == "" {
 		return
@@ -133,7 +123,7 @@ func (app *appEnv) LoadModsFromJSON() {
 	app.modsFromJSON = result
 }
 
-func (app *appEnv) FetchAndSave(url, destPath string) forgecliError {
+func (app *appEnv) FetchAndSave(url string, fileName string, destPath string) forgecliError {
 	logrus.Infof("Downloading: %s", url)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -146,8 +136,9 @@ func (app *appEnv) FetchAndSave(url, destPath string) forgecliError {
 	check(err)
 	defer resp.Body.Close()
 
-	f, err := os.Create(fmt.Sprintf(app.destination + "/" + destPath))
+	f, err := os.Create(fmt.Sprintf(destPath + "/" + fileName))
 	check(err)
+	defer f.Close()
 
 	_, err = io.Copy(f, resp.Body)
 	return err
