@@ -144,7 +144,7 @@ func (app *appEnv) LoadModsFromJSON() {
 	app.modsFromJSON = result
 }
 
-func (app *appEnv) FetchAndSave(url, destPath string) forgecliError {
+func (app *appEnv) FetchAndSave(url string, fileName string, destPath string) forgecliError {
 	logrus.Infof("Downloading: %s", url)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -157,8 +157,9 @@ func (app *appEnv) FetchAndSave(url, destPath string) forgecliError {
 	check(err)
 	defer resp.Body.Close()
 
-	f, err := os.Create(fmt.Sprintf(app.destination + "/" + destPath))
+	f, err := os.Create(fmt.Sprintf(destPath + "/" + fileName))
 	check(err)
+	defer f.Close()
 
 	_, err = io.Copy(f, resp.Body)
 	return err

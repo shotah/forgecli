@@ -132,8 +132,8 @@ func TestFabricClientInstallerLatestFabricVersion(t *testing.T) {
 	logrus.SetOutput(&buf)
 	var app appEnv
 	app.hc = *http.DefaultClient
-	expected := "\"java -jar './fabric-installer-0.11.1.jar' client\""
-	app.FabricClientInstaller()
+	expected := "Fetching XML: https://maven.fabricmc.net"
+	app.FabricClientInstallerVersion()
 	rawOutput := strings.Trim(buf.String(), "\n")
 	output := rawOutput[strings.LastIndex(rawOutput, "=")+1:]
 	if !strings.Contains(output, expected) {
@@ -153,5 +153,35 @@ func TestValidateJavaInstallation(t *testing.T) {
 	output := rawOutput[strings.LastIndex(rawOutput, "=")+1:]
 	if !strings.Contains(output, expected) {
 		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, output)
+	}
+}
+
+func TestFabricClientDownload(t *testing.T) {
+	var buf bytes.Buffer
+	logrus.SetOutput(&buf)
+	var app appEnv
+	if err := app.FabricClientDownload(); err != nil {
+		t.Errorf("Test failed, expected: '%s', got:  '%s'", "nil", err)
+	}
+
+	// Validates logging during the client download
+	expected := "Downloading: https://maven.fabricmc.net"
+	rawOutput := strings.Trim(buf.String(), "\n")
+	output := rawOutput[strings.LastIndex(rawOutput, "=")+1:]
+	if !strings.Contains(output, expected) {
+		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, output)
+	}
+
+	// Validates file is downloaded
+	filePath := "./" + app.clientInstallerFileName
+	_, err := os.Stat(filePath)
+	if err != nil && !os.IsExist(err) {
+		t.Errorf("Test failed, expected: '%s', got:  '%s'", filePath, "nil")
+	}
+
+	// Removes downloaded file:
+	logrus.Debugf("Removing test file: %s", filePath)
+	if err := os.Remove(filePath); err != nil {
+		t.Errorf("Test failed, could not remove: '%s', error:  '%s'", filePath, err)
 	}
 }

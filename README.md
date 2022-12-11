@@ -133,9 +133,8 @@ go build
 ## TODO List
 
 - ~~Add fabric xml download so we can parse latest version~~
-- Add call to get the file and get the latest version
-- Add call to download the Jar from the server
-  - AKA from here: `https://maven.fabricmc.net/net/fabricmc/fabric-installer/0.11.1/fabric-installer-0.11.1.jar`
+- ~~Add call to get the file and get the latest version~~
+- ~~Add call to download the Jar from the server~~
 - ~~Add checker to make sure java is installed.~~
   - ~~Give user message on how to install Java.~~ <- NOT GONNA DO THIS
 - Add install call of the jar:

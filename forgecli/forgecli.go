@@ -13,21 +13,23 @@ import (
 )
 
 type appEnv struct {
-	hc                   http.Client
-	jsonFile             string
-	forgeKey             string
-	version              string
-	clientInstaller      bool
-	projectIDs           string
-	downloadDependencies bool
-	clearMods            bool
-	modfamily            FamilyType
-	modReleaseType       ReleaseType
-	destination          string
-	modsFromJSON         JSONMods
-	forgeGameVersionType int
-	modsToDownload       map[int]ForgeMod
-	isDebug              bool
+	hc                      http.Client
+	jsonFile                string
+	forgeKey                string
+	version                 string
+	clientInstaller         bool
+	projectIDs              string
+	downloadDependencies    bool
+	clearMods               bool
+	modfamily               FamilyType
+	modReleaseType          ReleaseType
+	destination             string
+	modsFromJSON            JSONMods
+	forgeGameVersionType    int
+	modsToDownload          map[int]ForgeMod
+	clientInstallerVersion  string
+	clientInstallerFileName string
+	isDebug                 bool
 }
 
 // CLI Main Module Entrypoint
@@ -275,7 +277,7 @@ func (app *appEnv) GetVersionTypeNumber() error {
 
 func (app *appEnv) DownloadMods() error {
 	for _, mod := range app.modsToDownload {
-		if err := app.FetchAndSave(mod.DownloadURL, mod.Filename); err != nil {
+		if err := app.FetchAndSave(mod.DownloadURL, mod.Filename, app.destination); err != nil {
 			return err
 		}
 	}
@@ -292,21 +294,45 @@ func (app *appEnv) ValidateJavaInstallation() error {
 	return nil
 }
 
-func (app *appEnv) FabricClientInstaller() error {
+func (app *appEnv) FabricClientInstallerVersion() error {
+	if app.clientInstallerVersion != "" {
+		return nil
+	}
 	var fabricXMLResponse XMLFabric
 	if err := app.FetchXML(FabricMetadataURL, &fabricXMLResponse); err != nil {
 		return fmt.Errorf("could not get fabric version from:\n%s", FabricMetadataURL)
 	}
-	latestFabricVersion := fabricXMLResponse.Versioning.Latest
+	app.clientInstallerVersion = fabricXMLResponse.Versioning.Latest
+	return nil
+}
+
+func (app *appEnv) FabricClientDownload() error {
+	app.FabricClientInstallerVersion()
+	app.clientInstallerFileName = fmt.Sprintf("fabric-installer-%s.jar", app.clientInstallerVersion)
+	clientDownloadURL := FabricAPIBaseURL + app.clientInstallerVersion + "/" + app.clientInstallerFileName
+	// download the client where you are running the code from:
+	if err := app.FetchAndSave(clientDownloadURL, app.clientInstallerFileName, "."); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (app *appEnv) FabricClientInstaller() error {
+	app.FabricClientDownload()
 	if app.version == "" {
-		// Install command
-		// java -jar './fabric-installer-0.11.1.jar' client
-		logrus.Debugf("java -jar './fabric-installer-%s.jar' client", latestFabricVersion)
+		logrus.Debugf("java -jar './fabric-installer-%s.jar' client", app.clientInstallerVersion)
+		clientInstall, err := exec.Command("java", "-jar", app.clientInstallerFileName, "client").CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("fabric client install failed: %s", err)
+		}
+		logrus.Debugf("Install Output: %s", clientInstall)
 	} else {
-		// Install command.. etc...
-		// java -jar './fabric-installer-0.11.1.jar' client -mcversion 1.18.1
-		// java -jar './fabric-installer-0.11.1.jar' client -mcversion app.version
-		logrus.Debugf("java -jar './fabric-installer-%s.jar' client -mcversion %s", latestFabricVersion, app.version)
+		logrus.Debugf("java -jar './fabric-installer-%s.jar' client -mcversion %s", app.clientInstallerVersion, app.version)
+		clientInstall, err := exec.Command("java", "-jar", app.clientInstallerFileName, "client", "-mcversion", app.version).CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("fabric client install failed: %s", err)
+		}
+		logrus.Debugf("Install Output: %s", clientInstall)
 	}
 	return nil
 }
