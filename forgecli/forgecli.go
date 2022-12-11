@@ -317,23 +317,35 @@ func (app *appEnv) FabricClientDownload() error {
 	return nil
 }
 
+func (app *appEnv) FabricClientRemoval() error {
+	// Validates file is downloaded
+	filePath := "./" + app.clientInstallerFileName
+	_, err := os.Stat(filePath)
+	if err != nil && !os.IsExist(err) {
+		return err
+	}
+
+	// Removes downloaded file:
+	logrus.Debugf("Removing test file: %s", filePath)
+	if err := os.Remove(filePath); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (app *appEnv) FabricClientInstaller() error {
 	app.FabricClientDownload()
-	if app.version == "" {
-		logrus.Debugf("java -jar './fabric-installer-%s.jar' client", app.clientInstallerVersion)
-		clientInstall, err := exec.Command("java", "-jar", app.clientInstallerFileName, "client").CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("fabric client install failed: %s", err)
-		}
-		logrus.Debugf("Install Output: %s", clientInstall)
-	} else {
-		logrus.Debugf("java -jar './fabric-installer-%s.jar' client -mcversion %s", app.clientInstallerVersion, app.version)
-		clientInstall, err := exec.Command("java", "-jar", app.clientInstallerFileName, "client", "-mcversion", app.version).CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("fabric client install failed: %s", err)
-		}
-		logrus.Debugf("Install Output: %s", clientInstall)
+	installCommands := []string{"-jar", app.clientInstallerFileName, "client"}
+	if app.version != "" {
+		installCommands = []string{"-jar", app.clientInstallerFileName, "client", "-mcversion", app.version}
 	}
+	logrus.Debugf("java %v", installCommands)
+	clientInstall, err := exec.Command("java", installCommands...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("fabric client install failed: %s", err)
+	}
+	logrus.Debugf("Install Output: %s", clientInstall)
+	app.FabricClientRemoval()
 	return nil
 }
 

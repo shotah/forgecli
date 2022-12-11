@@ -141,6 +141,7 @@ func TestFabricClientInstallerLatestFabricVersion(t *testing.T) {
 	}
 }
 
+// TODO: MOCK THE CALLS!
 func TestValidateJavaInstallation(t *testing.T) {
 	var buf bytes.Buffer
 	logrus.SetOutput(&buf)
@@ -156,6 +157,7 @@ func TestValidateJavaInstallation(t *testing.T) {
 	}
 }
 
+// TODO: MOCK THE CALLS!
 func TestFabricClientDownload(t *testing.T) {
 	var buf bytes.Buffer
 	logrus.SetOutput(&buf)
@@ -172,16 +174,27 @@ func TestFabricClientDownload(t *testing.T) {
 		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, output)
 	}
 
-	// Validates file is downloaded
-	filePath := "./" + app.clientInstallerFileName
-	_, err := os.Stat(filePath)
-	if err != nil && !os.IsExist(err) {
-		t.Errorf("Test failed, expected: '%s', got:  '%s'", filePath, "nil")
+	// Removes downloaded file:
+	if err := app.FabricClientRemoval(); err != nil {
+		t.Errorf("Test failed, could not remove client jar, error:  '%s'", err)
+	}
+}
+
+// TODO: MOCK THE CALLS!
+// TESTS the full Version/Download/Install - Need to figure out mocks!
+func TestFabricClientInstaller(t *testing.T) {
+	var buf bytes.Buffer
+	logrus.SetOutput(&buf)
+	var app appEnv
+	if err := app.FabricClientInstaller(); err != nil {
+		t.Errorf("Test failed, expected: '%s', got:  '%s'", "nil", err)
 	}
 
-	// Removes downloaded file:
-	logrus.Debugf("Removing test file: %s", filePath)
-	if err := os.Remove(filePath); err != nil {
-		t.Errorf("Test failed, could not remove: '%s', error:  '%s'", filePath, err)
+	// Validates logging during the client download
+	expected := "Downloading: https://maven.fabricmc.net"
+	rawOutput := strings.Trim(buf.String(), "\n")
+	output := rawOutput[strings.LastIndex(rawOutput, "=")+1:]
+	if !strings.Contains(output, expected) {
+		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, output)
 	}
 }
