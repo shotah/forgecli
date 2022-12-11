@@ -109,7 +109,9 @@ func (app *appEnv) run() error {
 	app.PrepareDestinationFolder()
 	app.DownloadMods()
 	app.PrintDestinationFiles()
-	logrus.Info("Download Complete.")
+	logrus.Info("Mods Download Complete.")
+
+	app.ClientInstaller()
 	return nil
 }
 
@@ -208,28 +210,34 @@ func (app *appEnv) GetModsFromForge(modToGet JSONMod, _ ReleaseType) error {
 	return nil
 }
 
-func (app *appEnv) ModFilter(currMod ForgeMod, modToGet JSONMod) bool {
-	var results []bool
-	// Filtering on Filename Only
-	if modToGet.Filename != "" {
-		return strings.EqualFold(currMod.Filename, modToGet.Filename)
-	}
-
+func (app *appEnv) ModFamilyFilter(currMod ForgeMod) bool {
 	// Apply mod family filter
 	if app.modfamily != "" {
 		result := contains(currMod.GameVersions, string(app.modfamily))
-		results = append(results, result)
+		logrus.Debugf("Mod's family Filter Result: %t", result)
+		return result
 	}
+	return true
+}
 
+func (app *appEnv) ModVersionFilter(currMod ForgeMod, modToGet JSONMod) bool {
 	// Apply Version filter
+	modVersion := app.version
 	if modToGet.Version != "" {
-		result := containsPrefix(currMod.GameVersions, string(modToGet.Version))
-		results = append(results, result)
-	} else {
-		result := containsPrefix(currMod.GameVersions, string(app.version))
-		results = append(results, result)
+		modVersion = modToGet.Version
 	}
-	return allTrue(results)
+	logrus.Debugf("Mod's Game Version Filters: \n%s \n%s", currMod.GameVersions, string(modVersion))
+	result := contains(currMod.GameVersions, string(modVersion))
+	logrus.Debugf("Mod's Game Version Filter Result: %t", result)
+	return result
+}
+
+func (app *appEnv) ModFilter(currMod ForgeMod, modToGet JSONMod) bool {
+	// Filtering on Filename Only
+	if modToGet.Filename != "" {
+		return false
+	}
+	return app.ModFamilyFilter(currMod) && app.ModVersionFilter(currMod, modToGet)
 }
 
 func (app *appEnv) GetMCVersion() error {
@@ -311,10 +319,8 @@ func (app *appEnv) FabricClientDownload() error {
 	app.clientInstallerFileName = fmt.Sprintf("fabric-installer-%s.jar", app.clientInstallerVersion)
 	clientDownloadURL := FabricAPIBaseURL + app.clientInstallerVersion + "/" + app.clientInstallerFileName
 	// download the client where you are running the code from:
-	if err := app.FetchAndSave(clientDownloadURL, app.clientInstallerFileName, "."); err != nil {
-		return err
-	}
-	return nil
+	err := app.FetchAndSave(clientDownloadURL, app.clientInstallerFileName, ".")
+	return err
 }
 
 func (app *appEnv) FabricClientRemoval() error {
@@ -327,10 +333,7 @@ func (app *appEnv) FabricClientRemoval() error {
 
 	// Removes downloaded file:
 	logrus.Debugf("Removing test file: %s", filePath)
-	if err := os.Remove(filePath); err != nil {
-		return err
-	}
-	return nil
+	return os.Remove(filePath)
 }
 
 func (app *appEnv) FabricClientInstaller() error {
@@ -350,6 +353,10 @@ func (app *appEnv) FabricClientInstaller() error {
 }
 
 func (app *appEnv) ClientInstaller() error {
+	if !app.clientInstaller {
+		return nil
+	}
+	logrus.Info("Starting Client Installer")
 	if err := app.ValidateJavaInstallation(); err != nil {
 		return err
 	}
@@ -358,5 +365,6 @@ func (app *appEnv) ClientInstaller() error {
 			return err
 		}
 	}
+	logrus.Info("Finishing Client Installer")
 	return nil
 }

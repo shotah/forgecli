@@ -137,7 +137,6 @@ go build
 - ~~Add call to download the Jar from the server~~
 - ~~Add checker to make sure java is installed.~~
   - ~~Give user message on how to install Java.~~ <- NOT GONNA DO THIS
-- Add install call of the jar:
-  - AKA command: `java -jar './fabric-installer-0.11.1.jar' client`
-- Add cli command to Enable feature from the CLI
+- ~~Add install call of the jar~~
+- ~~Add cli command to Enable feature from the CLI~~
 - Revisit Chocolatey Package, and push back to chocolatey.org

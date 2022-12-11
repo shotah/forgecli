@@ -1,6 +1,6 @@
 package forgecli
 
-// Fabric URL for the installers meta data:
+// FabricMetadataURL is the url for the installers meta data:
 const FabricMetadataURL = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/maven-metadata.xml"
 
 // Fabric version struct
@@ -8,7 +8,7 @@ type fabricVersion struct {
 	Version string `xml:"version"`
 }
 
-// Fabric versioning struct which contains most of the data about the versions
+// fabricVersioning struct which contains most of the data about the versions
 type fabricVersioning struct {
 	Latest      string          `xml:"latest"`
 	Release     string          `xml:"release"`
@@ -16,7 +16,7 @@ type fabricVersioning struct {
 	LastUpdated string          `xml:"lastUpdated"`
 }
 
-// Fabric metadata definition struct
+// XMLFabric metadata definition struct
 type XMLFabric struct {
 	GroupID    string           `xml:"groupId"`
 	ArtifactID string           `xml:"artifactId"`

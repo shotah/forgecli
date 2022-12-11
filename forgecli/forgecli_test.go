@@ -191,7 +191,7 @@ func TestFabricClientInstaller(t *testing.T) {
 	}
 
 	// Validates logging during the client download
-	expected := "Downloading: https://maven.fabricmc.net"
+	expected := "Removing test file: ./fabric-installer"
 	rawOutput := strings.Trim(buf.String(), "\n")
 	output := rawOutput[strings.LastIndex(rawOutput, "=")+1:]
 	if !strings.Contains(output, expected) {
