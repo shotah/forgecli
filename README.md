@@ -2,11 +2,11 @@
 
 Package was created with the express intent to remove the guess work out of Mod acquiring and updating.
 
-## Getting Your Forge API Key:
+## Getting Your Forge API Key
 
 This is more complicated because you will be pulling/using the latest mod for the release of your game. To get started make sure you have a [CursedForge API Key](https://docs.curseforge.com/#getting-started). Then use it as a parameter for your build
 
-## Basic Run:
+## Basic Run
 
 Simple command to download latest fabric modules:
 
@@ -14,7 +14,7 @@ Simple command to download latest fabric modules:
 . ./forgecli.exe -forgekey '$2a$10...' -projects "416089,391366,552655" -family "fabric" -debug
 ```
 
-## Example Outputs:
+## Example Outputs
 
 **Example Successful Run**
 
@@ -65,6 +65,7 @@ To get started make sure you have a [CursedForge API Key](https://docs.curseforg
 - `version:` Default is LATEST, but this is Minecraft VERSION. e.g. 1.18.2,
   - PARTIAL matching is enabled, e.g. use 1.18 to pull back 1.18.2, 1.18.1, 1.18 mods
 - `clear:` Default is false, allows CLI to remove all mods before downloading new Mods.
+- `client:` Default is false, if family is defined and client is defined, it will attempt to install the latest client.
 - `dependencies:` Default is True, this uses the mods required dependencies to download missing mods.
 - `debug:` Enable extra logging.
 
@@ -73,7 +74,7 @@ To get started make sure you have a [CursedForge API Key](https://docs.curseforg
 **Basic Usage Command**
 
 ```bash
-. ./forgecli.exe -forgekey '$2a$10...' -file "forgeMods.json" -family "fabric"
+. ./forgecli.exe -forgekey '$2a$10...' -file "forgeMods.json" -family "fabric" -client -dependencies
 ```
 
 **Field Description**
@@ -109,7 +110,7 @@ To get started make sure you have a [CursedForge API Key](https://docs.curseforg
 ]
 ```
 
-## Manually Building and Testing:
+## Manually Building and Testing
 
 Make a `./.env` file in the root folder and add your forge key.
 
@@ -128,6 +129,25 @@ CMD To Build
 ```bash
 go build
 # . ./forgecli should now be available to be used.
+```
+
+## Chocolatey
+
+Chocolatey CMD to build and deploy
+
+```powershell
+choco uninstall forgecli -y
+$env:CHOCOKEY = "eae..."
+$env:CLIVERSION = "1.0.6"
+choco update chocolatey -y
+choco pack choco/forgecli/forgecli.nuspec --version $env:CLIVERSION
+choco apikey --key $env:CHOCOKEY --source "https://push.chocolatey.org/"
+
+# Validate Install:
+choco install "forgecli.${env:CLIVERSION}.nupkg" -y
+
+# Push
+choco push --key $env:CHOCOKEY "forgecli.${env:CLIVERSION}.nupkg" --source "https://push.chocolatey.org/"
 ```
 
 ## TODO List
