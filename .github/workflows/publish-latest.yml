@@ -1,10 +1,11 @@
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+      - master
 
 jobs:
   releases-matrix:
-    name: publish
+    name: publish-latest
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -16,10 +17,11 @@ jobs:
             goos: windows
     steps:
       - uses: actions/checkout@v3
-      - uses: wangyoucao577/go-release-action@v1.34
+      - uses: wangyoucao577/go-release-action@v1.32
         with:
           github_token: ${{ secrets.GITHUBTOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
           extra_files: LICENSE README.md
+          release_tag: latest
           md5sum: TRUE

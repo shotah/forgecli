@@ -1,0 +1,78 @@
+# .goreleaser.yaml
+project_name: forgecli
+before:
+  hooks:
+    - go get -u .
+    - go mod download
+    - go mod tidy
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 7
+    ignore:
+      - goos: windows
+        goarch: arm
+archives:
+  - format_overrides:
+      - goos: windows
+        format: zip
+checksum:
+  name_template: "checksums.txt"
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^misc:"
+chocolateys:
+  - name: forgecli
+    summary: Software to easily install minecraft mod clients and mods
+    description: |
+      {{ .ProjectName }} installer package.
+      Software to easily install minecraft mod clients and mods.
+    owners: chblodg
+    title: forgecli
+    authors: chblodg
+    project_url: https://github.com/shotah/forgecli
+    project_source_url: https://github.com/shotah/forgecli
+    url_template: "https://github.com/shotah/forgecli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    icon_url: "https://github.com/shotah/forgecli/releases/download/{{ .Tag }}/icon.png"
+    release_notes: "https://github.com/shotah/forgecli/releases/tag/{{ .Version }}"
+    copyright: 2022 chblodg
+    license_url: https://github.com/shotah/forgecli/blob/main/LICENSE
+    docs_url: https://github.com/shotah/forgecli/blob/main/README.md
+    bug_tracker_url: https://github.com/shotah/forgecli/issues
+    require_license_acceptance: false
+    tags: "curseforge cli minecraft fabric forge mods"
+    api_key: "{{ .Env.CHOCOKEY }}"
+    source_repo: "https://push.chocolatey.org/"
+    skip_publish: false
+    goamd64: v1
+# scoop:
+#   bucket:
+#     owner: chblodg
+#     name: scoop-bucket
+#     token: "{{ .Env.PUSH_GITHUB_TOKEN }}"
+#   folder: bucket
+#   license: MIT
+#   description: Command/agent to monitor the status of Minecraft servers
+# brews:
+#   - tap:
+#       owner: chblodg
+#       name: homebrew-tap
+#       token: "{{ .Env.PUSH_GITHUB_TOKEN }}"
+#     license: MIT
+#     description: Command/agent to monitor the status of Minecraft servers
