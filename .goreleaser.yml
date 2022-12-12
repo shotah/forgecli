@@ -69,16 +69,16 @@ chocolateys:
     goamd64: v1
 scoop:
   bucket:
-    owner: chblodg
+    owner: shotah
     name: scoop-bucket
-    token: "{{ .Env.GITHUB_TOKEN }}"
+    token: "{{ .Env.PUBLISH_GITHUB_TOKEN }}"
   folder: bucket
   license: MIT
   description: Software to easily install minecraft mod clients and mods
 brews:
   - tap:
-      owner: chblodg
+      owner: shotah
       name: homebrew-tap
-      token: "{{ .Env.GITHUB_TOKEN }}"
+      token: "{{ .Env.PUBLISH_GITHUB_TOKEN }}"
     license: MIT
     description: Software to easily install minecraft mod clients and mods
