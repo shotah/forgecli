@@ -28,13 +28,7 @@ builds:
       - darwin
     goarch:
       - amd64
-      - arm
       - arm64
-    goarm:
-      - 7
-    ignore:
-      - goos: windows
-        goarch: arm
 archives:
   - format_overrides:
       - goos: windows
@@ -73,18 +67,18 @@ chocolateys:
     api_key: "{{ .Env.CHOCOKEY }}"
     source_repo: https://push.chocolatey.org/
     goamd64: v1
-# scoop:
-#   bucket:
-#     owner: chblodg
-#     name: scoop-bucket
-#     token: "{{ .Env.PUSH_GITHUB_TOKEN }}"
-#   folder: bucket
-#   license: MIT
-#   description: Command/agent to monitor the status of Minecraft servers
-# brews:
-#   - tap:
-#       owner: chblodg
-#       name: homebrew-tap
-#       token: "{{ .Env.PUSH_GITHUB_TOKEN }}"
-#     license: MIT
-#     description: Command/agent to monitor the status of Minecraft servers
+scoop:
+  bucket:
+    owner: chblodg
+    name: scoop-bucket
+    token: "{{ .Env.GITHUB_TOKEN }}"
+  folder: bucket
+  license: MIT
+  description: Software to easily install minecraft mod clients and mods
+brews:
+  - tap:
+      owner: chblodg
+      name: homebrew-tap
+      token: "{{ .Env.GITHUB_TOKEN }}"
+    license: MIT
+    description: Software to easily install minecraft mod clients and mods
