@@ -11,8 +11,9 @@ gomod:
   gobinary: go
 announce:
   discord:
+    enabled: true
     message_template: "{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}"
-    author: GoReleaser
+    author: "{{ .AUTHOR }}"
     color: "3888754"
     icon_url: https://goreleaser.com/static/avatar.png
 builds:
