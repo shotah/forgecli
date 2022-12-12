@@ -19,3 +19,7 @@ lint :
 .PHONY: test
 test:
 	go test ./...
+
+.PHONY: gorelease
+gorelease:
+	goreleaser build --single-target --skip-validate --rm-dist

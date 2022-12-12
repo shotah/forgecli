@@ -19,7 +19,10 @@
 .DS_Store
 
 ### Personal Development Script and Environment ###
+.config
 personal-build-and-develop.*
 .env
 test.json
 scrap
+dist
+
