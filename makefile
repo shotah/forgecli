@@ -20,8 +20,6 @@ lint :
 test:
 	go test ./...
 
-.PHONY: choco-build
-choco-build:
-# Hash url: https://github.com/shotah/forgecli/releases/download/latest/forgecli-latest-windows-amd64.zip.md5
-# Zip url: https://github.com/shotah/forgecli/releases/download/latest/forgecli-latest-windows-amd64.zip
-	curl.exe -s $(RELEASEHASHURL) > md5.txt
+.PHONY: gorelease
+gorelease:
+	goreleaser build --single-target --skip-validate --rm-dist

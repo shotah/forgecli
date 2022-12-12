@@ -5,7 +5,10 @@ before:
     - go get -u .
     - go mod download
     - go mod tidy
-
+    - golint ./...
+    - go vet ./...
+    - gofmt -w -s .
+    - go test ./...
 env_files:
   github_token: ~/.config/goreleaser/github_token
 gomod:
