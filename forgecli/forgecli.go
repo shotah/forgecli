@@ -214,7 +214,6 @@ func (app *appEnv) ModFamilyFilter(currMod ForgeMod) bool {
 	// Apply mod family filter
 	if app.modfamily != "" {
 		result := contains(currMod.GameVersions, string(app.modfamily))
-		logrus.Debugf("Mod's family Filter Result: %t", result)
 		return result
 	}
 	return true
@@ -226,9 +225,7 @@ func (app *appEnv) ModVersionFilter(currMod ForgeMod, modToGet JSONMod) bool {
 	if modToGet.Version != "" {
 		modVersion = modToGet.Version
 	}
-	logrus.Debugf("Mod's Game Version Filters: \n%s \n%s", currMod.GameVersions, string(modVersion))
 	result := contains(currMod.GameVersions, string(modVersion))
-	logrus.Debugf("Mod's Game Version Filter Result: %t", result)
 	return result
 }
 
