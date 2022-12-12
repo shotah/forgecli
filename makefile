@@ -1,3 +1,6 @@
+include .env
+export
+
 .PHONY : upgrade
 upgrade :
 	go get -u .
@@ -18,8 +21,13 @@ lint :
 
 .PHONY: test
 test:
-	go test ./...
+	go test -v -vet=all ./...
 
-.PHONY: gorelease
-gorelease:
-	goreleaser build --single-target --skip-validate --rm-dist
+.PHONY: release
+release:
+	goreleaser build --single-target --skip-before --skip-validate --rm-dist
+
+.PHONY: release-deploy
+release-deploy:
+	echo $(GITHUB_TOKEN)
+	goreleaser release --skip-before --skip-validate --rm-dist

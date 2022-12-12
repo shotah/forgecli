@@ -58,7 +58,7 @@ chocolateys:
     authors: chblodg
     project_url: https://github.com/shotah/forgecli
     url_template: https://github.com/shotah/forgecli/releases/download/{{ .Tag }}/{{ .ArtifactName }}
-    icon_url: https://github.com/shotah/forgecli/releases/download/{{ .Tag }}/icon.png
+    icon_url: https://github.com/shotah/forgecli/blob/main/icon.png
     copyright: 2022 chblodg
     license_url: https://github.com/shotah/forgecli/blob/main/LICENSE
     project_source_url: https://github.com/shotah/forgecli
