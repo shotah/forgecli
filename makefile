@@ -30,4 +30,4 @@ release:
 .PHONY: release-deploy
 release-deploy:
 	echo $(GITHUB_TOKEN)
-	goreleaser release --skip-before --skip-validate --rm-dist
+	goreleaser release --parallelism 6 --skip-before --skip-validate --rm-dist
