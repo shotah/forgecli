@@ -16,7 +16,6 @@ lint :
 	golint ./...
 	go vet ./...
 	gofmt -w -s .
-	revive -config revive.toml ./...
 	staticcheck ./...
 
 .PHONY: test
@@ -29,8 +28,9 @@ test-failed:
 
 .PHONY: coverage
 coverage:
-	go test -coverprofile=coverage_file ./...
-	go tool cover -html=coverage_file
+# go gocov convert coverage.out | go gocov-xml > coverage.xml
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out -o coverage.html
 
 .PHONY: release
 release:

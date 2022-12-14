@@ -8,7 +8,91 @@ import (
 
 	"github.com/h2non/gock"
 	"github.com/nbio/st"
+	"github.com/sirupsen/logrus"
 )
+
+func TestSetForgeAPIKeyNoKey(t *testing.T) {
+	os.Setenv("FORGEKEY", "")
+	os.Setenv("MODS_FORGEAPI_KEY", "")
+
+	var app appEnv
+	app.forgeKey = ""
+	err := app.SetForgeAPIKey()
+	expectedErrorMessage := fmt.Errorf("MISSING a required field: forgeKey")
+	st.Expect(t, err, expectedErrorMessage)
+	expected := ""
+	received := app.forgeKey
+	if received != expected {
+		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, received)
+	}
+}
+
+func TestSetForgeAPIKeyProvidedKey(t *testing.T) {
+	os.Setenv("FORGEKEY", "")
+	os.Setenv("MODS_FORGEAPI_KEY", "")
+
+	var app appEnv
+	app.forgeKey = "testMockKey"
+	err := app.SetForgeAPIKey()
+	st.Expect(t, err, nil)
+	expected := "testMockKey"
+	received := app.forgeKey
+	if received != expected {
+		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, received)
+	}
+}
+
+func TestSetForgeAPIKeyEnvForgeKey(t *testing.T) {
+	expected := "testForgeMockKey"
+	os.Setenv("FORGEKEY", expected)
+	os.Setenv("MODS_FORGEAPI_KEY", "")
+
+	var app appEnv
+	err := app.SetForgeAPIKey()
+	st.Expect(t, err, nil)
+	received := app.forgeKey
+	if received != expected {
+		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, received)
+	}
+}
+
+func TestSetForgeAPIKeyEnvModsForgeKey(t *testing.T) {
+	expected := "testModsMockKey"
+	os.Setenv("FORGEKEY", "")
+	os.Setenv("MODS_FORGEAPI_KEY", expected)
+
+	var app appEnv
+	err := app.SetForgeAPIKey()
+	st.Expect(t, err, nil)
+	received := app.forgeKey
+	if received != expected {
+		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, received)
+	}
+}
+
+func TestGetModsByJSONFileNoFileProvided(t *testing.T) {
+	var app appEnv
+	err := app.GetModsByJSONFile()
+	st.Expect(t, err, nil)
+}
+
+func TestGetModsByJSONFileFileProvided(t *testing.T) {
+	logrus.SetLevel(logrus.DebugLevel)
+	defer gock.Off()
+	MockMCVersions(t)
+	MockCurseForgeVersions(t)
+	MockCurseForgeModResponse(t)
+
+	var app appEnv
+	app.modsToDownload = make(map[int]ForgeMod)
+	app.version = "1.19.2"
+	app.modfamily = Fabric
+	app.jsonFile = "./mocks/modsfile_by_json.json"
+	err := app.LoadModsFromJSON()
+	st.Expect(t, err, nil)
+	err = app.GetModsByJSONFile()
+	st.Expect(t, err, nil)
+}
 
 // Test will fail as MC receives version updates
 func TestGetVersionTypeNumber(t *testing.T) {

@@ -8,6 +8,7 @@ import (
 	"github.com/nbio/st"
 )
 
+// MockFabricXML used to return mock xml data for fabric calls
 func MockFabricXML(t *testing.T) {
 	mockFile := "./mocks/fabric.xml"
 	gock.New("https://maven.fabricmc.net").
@@ -15,6 +16,7 @@ func MockFabricXML(t *testing.T) {
 		Reply(200).File(mockFile)
 }
 
+// MockFabricJAR returns a mock jar in place of downloading the real jar file.
 func MockFabricJAR(t *testing.T) {
 	mockFile := "./mocks/fake.jar"
 	gock.New("https://maven.fabricmc.net").
@@ -22,6 +24,7 @@ func MockFabricJAR(t *testing.T) {
 		Reply(200).File(mockFile)
 }
 
+// MockMCVersions returns a manifest instead of calling the MC api for MC versions
 func MockMCVersions(t *testing.T) {
 	mockFile := "./mocks/mc_version_manifest.json"
 	body, err := os.ReadFile(mockFile)
@@ -32,6 +35,7 @@ func MockMCVersions(t *testing.T) {
 		JSON(body)
 }
 
+// MockCurseForgeVersions returns versions types instead of calling the curse forge for the version types
 func MockCurseForgeVersions(t *testing.T) {
 	mockFile := "./mocks/mc_version_types.json"
 	body, err := os.ReadFile(mockFile)
@@ -42,6 +46,7 @@ func MockCurseForgeVersions(t *testing.T) {
 		JSON(body)
 }
 
+// MockCurseForgeModResponse returns a mock module json, instead of calling the real api for a mod json
 func MockCurseForgeModResponse(t *testing.T) {
 	mockFile := "./mocks/voice_mod_response.json"
 	body, err := os.ReadFile(mockFile)
