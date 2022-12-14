@@ -1,3 +1,6 @@
+include .env
+export
+
 .PHONY : upgrade
 upgrade :
 	go get -u .
@@ -18,4 +21,13 @@ lint :
 
 .PHONY: test
 test:
-	go test ./...
+	go test -v -vet=all ./...
+
+.PHONY: release
+release:
+	goreleaser build --single-target --skip-before --skip-validate --rm-dist
+
+.PHONY: release-deploy
+release-deploy:
+# goreleaser release --rm-dist --config .goreleaser-actions.yml --parallelism 6 --skip-before --skip-validate
+	goreleaser release --parallelism 6 --skip-before --skip-validate --rm-dist --debug

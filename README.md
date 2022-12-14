@@ -2,7 +2,62 @@
 
 Package was created with the express intent to remove the guess work out of Mod acquiring and updating.
 
-## Getting Your Forge API Key
+## Installation
+
+### Windows
+
+#### Chocolatey for windows
+
+Chocolatey based install
+How do I install these tools?
+
+[Install chocolatey url](https://docs.chocolatey.org/en-us/choco/setup)
+
+```bash
+choco install forgecli -Y
+```
+
+#### Scoop for windows
+
+Scoop Manifests
+How do I install these tools?
+
+[Install scoop url](https://scoop.sh/)
+
+Add this bucket to scoop:
+
+```bash
+scoop bucket add shotah https://github.com/shotah/scoop-bucket.git
+```
+
+Install tools via scoop install:
+
+```bash
+scoop install forgecli
+```
+
+### Mac
+
+#### Homebrew
+
+Homebrew Manifests
+How do I install these tools?
+
+[Install Homebrew](https://docs.brew.sh/Installation)
+
+Add this tap to brew:
+
+```bash
+brew tap shotah/tap
+```
+
+Install tools via brew install:
+
+```bash
+brew install forgecli
+```
+
+## Forge API Key
 
 This is more complicated because you will be pulling/using the latest mod for the release of your game. To get started make sure you have a [CursedForge API Key](https://docs.curseforge.com/#getting-started). Then use it as a parameter for your build
 

@@ -1,0 +1,81 @@
+# .goreleaser.yaml
+project_name: forgecli
+before:
+  hooks:
+    - go get -u .
+    - go mod download
+    - go mod tidy
+env_files:
+  github_token: ~/.config/goreleaser/github_token
+gomod:
+  gobinary: go
+announce:
+  discord:
+    enabled: true
+    message_template: "{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}"
+    author: "{{ .AUTHOR }}"
+    color: "3888754"
+    icon_url: https://goreleaser.com/static/avatar.png
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+archives:
+  - format_overrides:
+      - goos: windows
+        format: zip
+checksum:
+  name_template: "checksums.txt"
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^misc:"
+chocolateys:
+  - name: forgecli
+    owners: chblodg
+    title: forgecli
+    authors: chblodg
+    project_url: https://github.com/shotah/forgecli
+    url_template: https://github.com/shotah/forgecli/releases/download/{{ .Tag }}/{{ .ArtifactName }}
+    icon_url: https://github.com/shotah/forgecli/blob/main/icon.png
+    copyright: 2022 chblodg
+    license_url: https://github.com/shotah/forgecli/blob/main/LICENSE
+    project_source_url: https://github.com/shotah/forgecli
+    docs_url: https://github.com/shotah/forgecli/blob/main/README.md
+    bug_tracker_url: https://github.com/shotah/forgecli/issues
+    tags: curseforge cli minecraft fabric forge mods
+    summary: Software to easily install minecraft mod clients and mods
+    description: |
+      {{ .ProjectName }} installer package.
+      Software to easily install minecraft mod clients and mods.
+    release_notes: https://github.com/shotah/forgecli/releases/tag/{{ .Version }}
+    api_key: "{{ .Env.CHOCOKEY }}"
+    source_repo: https://push.chocolatey.org/
+    goamd64: v1
+scoop:
+  bucket:
+    owner: shotah
+    name: scoop-bucket
+    token: "{{ .Env.PUBLISH_GITHUB_TOKEN }}"
+  folder: bucket
+  license: MIT
+  description: Software to easily install minecraft mod clients and mods
+brews:
+  - tap:
+      owner: shotah
+      name: homebrew-tap
+      token: "{{ .Env.PUBLISH_GITHUB_TOKEN }}"
+    license: MIT
+    description: Software to easily install minecraft mod clients and mods
