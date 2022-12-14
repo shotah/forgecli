@@ -48,7 +48,7 @@ func (app *appEnv) GetModsByJSONFile() error {
 	if app.jsonFile == "" {
 		return nil
 	}
-	logrus.Debugf("Getting Mod: %s", app.modsFromJSON)
+	logrus.Debugf("Getting Mods: %s", app.modsFromJSON)
 	var releaseType ReleaseType
 	for _, fileMod := range app.modsFromJSON {
 		logrus.Debugf("Getting Mod: %s", fileMod.ProjectID)
@@ -57,6 +57,7 @@ func (app *appEnv) GetModsByJSONFile() error {
 		} else {
 			releaseType = app.modReleaseType
 		}
+		logrus.Debugf("Getting Mod releaseType: %v", releaseType)
 		if err := app.GetModsFromForge(fileMod, releaseType); err != nil {
 			return err
 		}
@@ -94,11 +95,13 @@ func (app *appEnv) GetModsFromForge(modToGet JSONMod, _ ReleaseType) error {
 	if err := app.FetchForgeAPIJSON(url, &resp); err != nil {
 		return err
 	}
+	// logrus.Debugf("Response from forge: %v", resp.Data)
 
 	foundID := 0
 	var foundMod ForgeMod
 	for _, currMod := range resp.Data {
 		if currMod.ID > foundID && app.ModFilter(currMod, modToGet) {
+			logrus.Debugf("Found mod: %d", currMod.ID)
 			foundID = currMod.ID
 			foundMod = currMod
 		}
@@ -106,6 +109,7 @@ func (app *appEnv) GetModsFromForge(modToGet JSONMod, _ ReleaseType) error {
 	if foundID == 0 {
 		return fmt.Errorf("could not find %s for minecraft version: %s or family: %s", modToGet.ProjectID, app.version, app.modfamily)
 	}
+	logrus.Debugf("Found mod: %v", foundMod)
 	app.modsToDownload[foundID] = foundMod
 	logrus.Infof("Found Latest FileID: %d for Mod: %s", foundID, modToGet.ProjectID)
 	return nil
