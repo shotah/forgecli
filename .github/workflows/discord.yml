@@ -2,7 +2,7 @@ name: Discord notifications
 
 on:
   workflow_run:
-    workflows: ["ContinuousIntegration", "PullRequest"]
+    workflows: ["PullRequest"]
     types:
       - completed
 
