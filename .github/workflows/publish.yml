@@ -22,6 +22,7 @@ jobs:
           version: latest
           args: release --rm-dist --config .goreleaser-actions.yml
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
           PUBLISH_GITHUB_TOKEN: ${{ secrets.PUBLISH_GITHUB_TOKEN }}
           AUTHOR: ${{ github.event.pull_request.user.login }}
           CHOCOKEY: ${{ secrets.CHOCOKEY }}
