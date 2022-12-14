@@ -21,7 +21,16 @@ lint :
 
 .PHONY: test
 test:
-	go test -v -vet=all ./...
+	go test -cover -vet=all ./...
+
+.PHONY: test-failed
+test-failed:
+	go test -failfast -v -cover ./...
+
+.PHONY: coverage
+coverage:
+	go test -coverprofile=coverage_file ./...
+	go tool cover -html=coverage_file
 
 .PHONY: release
 release:
@@ -29,5 +38,5 @@ release:
 
 .PHONY: release-deploy
 release-deploy:
-	goreleaser release --rm-dist --config .goreleaser-actions.yml --parallelism 6 --skip-before --skip-validate
-# goreleaser release --parallelism 6 --skip-before --skip-validate --rm-dist
+# goreleaser release --rm-dist --config .goreleaser-actions.yml --parallelism 6 --skip-before --skip-validate
+	goreleaser release --parallelism 6 --skip-before --skip-validate --rm-dist --debug

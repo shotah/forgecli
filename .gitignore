@@ -6,6 +6,9 @@
 *.dylib
 *.jar
 
+# Jar used for testing inplace of downloading a real jar.
+!forgecli/mocks/fake.jar
+
 # Test binary, built with `go test -c`
 *.test
 
