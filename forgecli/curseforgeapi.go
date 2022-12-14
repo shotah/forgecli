@@ -28,23 +28,25 @@ func (app *appEnv) SetForgeAPIKey() error {
 	return fmt.Errorf("MISSING a required field: forgeKey")
 }
 
-func (app *appEnv) GetModsByProjectIDs() {
+func (app *appEnv) GetModsByProjectIDs() error {
 	if app.projectIDs == "" {
-		return
+		return nil
 	}
 	projectIDs := strings.Split(app.projectIDs, ",")
 	for _, projectID := range projectIDs {
 		var convertedJSONMod JSONMod
 		convertedJSONMod.ProjectID = projectID
 		logrus.Debugf("Getting Mod: %s", convertedJSONMod.ProjectID)
-		err := app.GetModsFromForge(convertedJSONMod, app.modReleaseType)
-		check(err)
+		if err := app.GetModsFromForge(convertedJSONMod, app.modReleaseType); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func (app *appEnv) GetModsByJSONFile() {
+func (app *appEnv) GetModsByJSONFile() error {
 	if app.jsonFile == "" {
-		return
+		return nil
 	}
 	logrus.Debugf("Getting Mod: %s", app.modsFromJSON)
 	var releaseType ReleaseType
@@ -55,9 +57,11 @@ func (app *appEnv) GetModsByJSONFile() {
 		} else {
 			releaseType = app.modReleaseType
 		}
-		err := app.GetModsFromForge(fileMod, releaseType)
-		check(err)
+		if err := app.GetModsFromForge(fileMod, releaseType); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func (app *appEnv) GetModsDependencies() error {
@@ -70,8 +74,9 @@ func (app *appEnv) GetModsDependencies() error {
 				var convertedJSONMod JSONMod
 				convertedJSONMod.ProjectID = strconv.Itoa(modDep.ModID)
 				logrus.Debugf("Getting Mod dependency: %s", convertedJSONMod.ProjectID)
-				err := app.GetModsFromForge(convertedJSONMod, releaseLookup["release"])
-				check(err)
+				if err := app.GetModsFromForge(convertedJSONMod, releaseLookup["release"]); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -86,8 +91,9 @@ func (app *appEnv) GetModsFromForge(modToGet JSONMod, _ ReleaseType) error {
 		"https://api.curseforge.com/v1/mods/%s/files?gameVersionTypeID=%d&index=%d&pageSize=%d",
 		modToGet.ProjectID, app.forgeGameVersionType, pageIndex, pageSize,
 	)
-	err := app.FetchForgeAPIJSON(url, &resp)
-	check(err)
+	if err := app.FetchForgeAPIJSON(url, &resp); err != nil {
+		return err
+	}
 
 	foundID := 0
 	var foundMod ForgeMod

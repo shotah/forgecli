@@ -15,18 +15,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type forgecliError interface {
-	Error() string
-}
-
-func check(e forgecliError) {
-	if e != nil {
-		logrus.Error(e.Error())
-		logrus.Error("Exiting...")
-		os.Exit(1)
-	}
-}
-
 func contains(s []string, e string) bool {
 	for _, a := range s {
 		if strings.EqualFold(a, e) {
@@ -36,13 +24,15 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func (app *appEnv) GetTargetDirectory() {
+func (app *appEnv) GetTargetDirectory() error {
 	if app.destination != "" {
-		return
+		return nil
 	}
 
 	user, err := user.Current()
-	check(err)
+	if err != nil {
+		return err
+	}
 	os := runtime.GOOS
 	switch os {
 	case "windows":
@@ -52,92 +42,116 @@ func (app *appEnv) GetTargetDirectory() {
 	case "linux":
 		app.destination = fmt.Sprintf("%s/Library/Application Support/minecraft/mods", user.HomeDir)
 	default:
-		err := fmt.Errorf("%s does not have a default directory, please provide target directory", os)
-		check(err)
+		if err := fmt.Errorf("%s does not have a default directory, please provide target directory", os); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func (app *appEnv) EnsureDestination() {
+func (app *appEnv) EnsureDestination() error {
 	logrus.Debugf("Making Folder if not exist: %s", app.destination)
 	err := os.MkdirAll(app.destination, os.ModeDir)
 	if err != nil && !os.IsExist(err) {
-		check(err)
+		return err
 	}
+	return nil
 }
 
-func (app *appEnv) PrepareDestinationFolder() {
+func (app *appEnv) PrepareDestinationFolder() error {
 	app.GetTargetDirectory()
 	logrus.Debugf("Mod Destination is set to: %s", app.destination)
 	if app.clearMods {
 		logrus.Debugf("Removing contents of: %s", app.destination)
-		err := os.RemoveAll(app.destination)
-		check(err)
+		if err := os.RemoveAll(app.destination); err != nil {
+			return err
+		}
 	}
 	app.EnsureDestination()
+	return nil
 }
 
-func (app *appEnv) FetchForgeAPIJSON(url string, data interface{}) forgecliError {
+func (app *appEnv) FetchForgeAPIJSON(url string, data interface{}) error {
 	logrus.Debugf("Fetching: %s", url)
 	req, err := http.NewRequest("GET", url, nil)
-	check(err)
+	if err != nil {
+		return err
+	}
 	req.Header = http.Header{
 		"Accept":    []string{"application/json"},
 		"x-api-key": []string{app.forgeKey},
 	}
 	resp, err := app.hc.Do(req)
-	check(err)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 	return json.NewDecoder(resp.Body).Decode(data)
 }
 
-func (app *appEnv) FetchJSON(url string, data interface{}) forgecliError {
+func (app *appEnv) FetchJSON(url string, data interface{}) error {
 	logrus.Debugf("Fetching JSON: %s", url)
 	resp, err := app.hc.Get(url)
-	check(err)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 	return json.NewDecoder(resp.Body).Decode(data)
 }
 
-func (app *appEnv) FetchXML(url string, data interface{}) forgecliError {
+func (app *appEnv) FetchXML(url string, data interface{}) error {
 	logrus.Debugf("Fetching XML: %s", url)
 	resp, err := app.hc.Get(url)
-	check(err)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 	respBody, err := io.ReadAll(resp.Body)
-	check(err)
+	if err != nil {
+		return err
+	}
 	return xml.Unmarshal(respBody, &data)
 }
 
-func (app *appEnv) LoadModsFromJSON() {
+func (app *appEnv) LoadModsFromJSON() error {
 	if app.jsonFile == "" {
-		return
+		return nil
 	}
 	logrus.Debugf("Fetching JSON from file: %s", app.jsonFile)
 	jsonFile, err := os.Open(app.jsonFile)
-	check(err)
+	if err != nil {
+		return err
+	}
 	defer jsonFile.Close()
 	byteValue, _ := io.ReadAll(jsonFile)
 	var result JSONMods
 	json.Unmarshal([]byte(byteValue), &result)
 	logrus.Debugf("Pulled from json file: %s", result)
 	app.modsFromJSON = result
+	return nil
 }
 
-func (app *appEnv) FetchAndSave(url string, fileName string, destPath string) forgecliError {
+func (app *appEnv) FetchAndSave(url string, fileName string, destPath string) error {
 	logrus.Infof("Downloading: %s", url)
 
 	req, err := http.NewRequest("GET", url, nil)
-	check(err)
+	if err != nil {
+		return err
+	}
 	req.Header = http.Header{
 		"Accept":    []string{"application/json"},
 		"x-api-key": []string{app.forgeKey},
 	}
 	resp, err := app.hc.Do(req)
-	check(err)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 
 	f, err := os.Create(fmt.Sprintf(destPath + "/" + fileName))
-	check(err)
+	if err != nil {
+		return err
+	}
 	defer f.Close()
 
 	_, err = io.Copy(f, resp.Body)

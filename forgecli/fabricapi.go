@@ -26,9 +26,11 @@ func (app *appEnv) FabricClientInstallerVersion() error {
 }
 
 func (app *appEnv) FabricClientDownload() error {
+	logrus.Debug("FabricClientDownload")
 	app.FabricClientInstallerVersion()
 	app.clientInstallerFileName = fmt.Sprintf("fabric-installer-%s.jar", app.clientInstallerVersion)
 	clientDownloadURL := FabricAPIBaseURL + app.clientInstallerVersion + "/" + app.clientInstallerFileName
+	logrus.Debugf("FabricClientDownload: URL: %s", clientDownloadURL)
 	// download the client where you are running the code from:
 	err := app.FetchAndSave(clientDownloadURL, app.clientInstallerFileName, ".")
 	return err
@@ -41,9 +43,7 @@ func (app *appEnv) FabricClientRemoval() error {
 	if err != nil && !os.IsExist(err) {
 		return err
 	}
-
-	// Removes downloaded file:
-	logrus.Debugf("Removing test file: %s", filePath)
+	logrus.Debugf("Removing file: %s", filePath)
 	return os.Remove(filePath)
 }
 

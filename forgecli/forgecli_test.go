@@ -2,7 +2,6 @@ package forgecli
 
 import (
 	"bytes"
-	"net/http"
 	"os"
 	"strings"
 	"testing"
@@ -11,12 +10,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func LoadDotEnv() {
+func LoadDotEnv() error {
 	logrus.SetLevel(logrus.DebugLevel)
 	if os.Getenv("FORGEKEY") == "" {
-		err := godotenv.Load("../.env")
-		check(err)
+		if err := godotenv.Load("../.env"); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func TestCLIReturnsError(t *testing.T) {
@@ -25,20 +26,6 @@ func TestCLIReturnsError(t *testing.T) {
 	actual := CLI(cliInput)
 	if actual != expected {
 		t.Errorf("Test failed, expected: '%d', got:  '%d'", expected, actual)
-	}
-}
-
-func TestFabricClientInstallerLatestFabricVersion(t *testing.T) {
-	var buf bytes.Buffer
-	logrus.SetOutput(&buf)
-	var app appEnv
-	app.hc = *http.DefaultClient
-	expected := "Fetching XML: https://maven.fabricmc.net"
-	app.FabricClientInstallerVersion()
-	rawOutput := strings.Trim(buf.String(), "\n")
-	output := rawOutput[strings.LastIndex(rawOutput, "=")+1:]
-	if !strings.Contains(output, expected) {
-		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, output)
 	}
 }
 
