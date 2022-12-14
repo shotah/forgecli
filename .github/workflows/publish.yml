@@ -1,3 +1,5 @@
+name: PublishRelease
+
 on:
   push:
     tags:
