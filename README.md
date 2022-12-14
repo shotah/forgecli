@@ -1,4 +1,5 @@
 # ForgeCLI Guide
+![Coverage](https://img.shields.io/badge/Coverage-51.1%25-yellow)
 
 Package was created with the express intent to remove the guess work out of Mod acquiring and updating.
 
