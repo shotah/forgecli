@@ -1,9 +1,12 @@
 name: Generate code coverage badge
 
-on:
-  pull_request:
-    branches:
-      - main
+# on:
+#   pull_request:
+#     branches:
+#       - dev
+#       - main
+
+on: [push]
 
 jobs:
   test:
@@ -19,7 +22,10 @@ jobs:
       - name: Setup go
         uses: actions/setup-go@v3
         with:
-          go-version: "1.19.x"
+          go-version: "1.18"
+
+      - name: Install OS dependencies
+        run: sudo apt-get update && sudo apt-get install libgl1-mesa-dev xorg-dev
 
       - uses: actions/cache@v3
         with:
@@ -56,5 +62,5 @@ jobs:
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.GITHUBTOKEN }}
+          github_token: ${{ github.token }}
           branch: ${{ github.head_ref }}

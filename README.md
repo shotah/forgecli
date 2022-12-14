@@ -1,3 +1,11 @@
+[![CI](https://github.com/shotah/forgecli/workflows/CI/badge.svg)](https://github.com/shotah/forgecli/actions?query=workflow%3ACI)
+![Coverage](https://img.shields.io/badge/Coverage-64.0%25-brightgreen)
+[![Update release version.](https://github.com/shotah/forgecli/workflows/Update%20release%20version./badge.svg)](https://github.com/shotah/forgecli/actions?query=workflow%3A%22Update+release+version.%22)
+
+[![Windows](https://img.shields.io/badge/Windows-0078D6?logo=windows&logoColor=white)](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?logo=ubuntu&logoColor=white)](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on)
+[![Mac OS](https://img.shields.io/badge/mac%20os-000000?logo=macos&logoColor=F0F0F0)](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on)
+
 # ForgeCLI Guide
 
 Package was created with the express intent to remove the guess work out of Mod acquiring and updating.
