@@ -30,13 +30,16 @@ func TestCLIReturnsError(t *testing.T) {
 }
 
 func TestValidateJavaInstallation(t *testing.T) {
+	version := "Java Version Mock"
+	javaVersion = []byte(version)
 	var buf bytes.Buffer
 	logrus.SetOutput(&buf)
 	var app appEnv
 	if err := app.ValidateJavaInstallation(); err != nil {
 		t.Errorf("Test failed, expected: '%s', got:  '%s'", "nil", err)
 	}
-	expected := "java version found"
+
+	expected := "java version found: Java Version Mock"
 	rawOutput := strings.Trim(buf.String(), "\n")
 	output := rawOutput[strings.LastIndex(rawOutput, "=")+1:]
 	if !strings.Contains(output, expected) {

@@ -113,10 +113,11 @@ func (app *appEnv) run() error {
 	return nil
 }
 
+var javaVersion, javaErr = exec.Command("java", "-version").CombinedOutput()
+
 func (app *appEnv) ValidateJavaInstallation() error {
-	javaVersion, err := exec.Command("java", "-version").CombinedOutput()
-	if err != nil {
-		logrus.Debugln("java version not found")
+	if javaErr != nil {
+		logrus.Debug("java version not found")
 		return fmt.Errorf("unable to find java, please install and try again")
 	}
 	logrus.Debugf("java version found: %s", javaVersion)
@@ -139,10 +140,10 @@ func (app *appEnv) ClientInstaller() error {
 		if err := app.FabricClientInstaller(); err != nil {
 			return err
 		}
-	case Forge:
-		if err := app.FabricClientInstaller(); err != nil {
-			return err
-		}
+		// case Forge:
+		// 	if err := app.FabricClientInstaller(); err != nil {
+		// 		return err
+		// 	}
 	}
 
 	logrus.Info("Finishing Client Installer")

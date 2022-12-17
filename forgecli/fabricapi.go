@@ -47,6 +47,10 @@ func (app *appEnv) FabricClientRemoval() error {
 	return os.Remove(filePath)
 }
 
+var javaInstallFabric = func(installCommands []string) ([]byte, error) {
+	return exec.Command("java", installCommands...).CombinedOutput()
+}
+
 func (app *appEnv) FabricClientInstaller() error {
 	app.FabricClientDownload()
 	installCommands := []string{"-jar", app.clientInstallerFileName, "client"}
@@ -54,7 +58,7 @@ func (app *appEnv) FabricClientInstaller() error {
 		installCommands = []string{"-jar", app.clientInstallerFileName, "client", "-mcversion", app.version}
 	}
 	logrus.Debugf("java %v", installCommands)
-	clientInstall, err := exec.Command("java", installCommands...).CombinedOutput()
+	clientInstall, err := javaInstallFabric(installCommands)
 	if err != nil {
 		return fmt.Errorf("fabric client install failed: %s", err)
 	}
