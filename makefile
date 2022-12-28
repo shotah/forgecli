@@ -39,4 +39,4 @@ release:
 .PHONY: release-deploy
 release-deploy:
 # goreleaser release --rm-dist --config .goreleaser-actions.yml --parallelism 6 --skip-before --skip-validate
-	goreleaser release --parallelism 6 --skip-before --skip-validate --rm-dist --debug
+	goreleaser release --skip-before --skip-validate --rm-dist --skip-announce --release-notes="" --debug

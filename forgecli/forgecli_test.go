@@ -6,9 +6,14 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/h2non/gock"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 )
+
+var FS afero.Fs = afero.NewMemMapFs()
+var AFS *afero.Afero = &afero.Afero{Fs: FS}
 
 func LoadDotEnv() error {
 	logrus.SetLevel(logrus.DebugLevel)
@@ -20,9 +25,35 @@ func LoadDotEnv() error {
 	return nil
 }
 
-func TestCLIReturnsError(t *testing.T) {
+func TestCLIFromArgsReturnsError(t *testing.T) {
 	expected := 2
 	cliInput := []string{"-help"}
+	actual := CLI(cliInput)
+	if actual != expected {
+		t.Errorf("Test failed, expected: '%d', got:  '%d'", expected, actual)
+	}
+}
+
+func TestCLIReturnsZero(t *testing.T) {
+	logrus.SetLevel(logrus.DebugLevel)
+
+	// Mock all potential http calls:
+	defer gock.Off()
+	MockMCVersions(t)
+	MockCurseForgeModResponse(t)
+	MockCurseForgeModFile(t)
+
+	// // Make mock folder to load mods into
+	// var app appEnv
+	// app.GetTargetDirectory()
+	// AFS.MkdirAll(app.destination, 0755)
+	// err := os.MkdirAll(app.destination, os.ModeDir)
+	// if err != nil && !os.IsExist(err) {
+	// 	logrus.Debugf("error message: %s", err)
+	// }
+	// Start test
+	expected := 0
+	cliInput := []string{"-projects", "416089", "-destination", "."}
 	actual := CLI(cliInput)
 	if actual != expected {
 		t.Errorf("Test failed, expected: '%d', got:  '%d'", expected, actual)
