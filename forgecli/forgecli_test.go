@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/h2non/gock"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 )
@@ -20,9 +21,23 @@ func LoadDotEnv() error {
 	return nil
 }
 
-func TestCLIReturnsError(t *testing.T) {
+func TestCLIFromArgsReturnsError(t *testing.T) {
 	expected := 2
 	cliInput := []string{"-help"}
+	actual := CLI(cliInput)
+	if actual != expected {
+		t.Errorf("Test failed, expected: '%d', got:  '%d'", expected, actual)
+	}
+}
+
+func TestCLIReturnsZero(t *testing.T) {
+	logrus.SetLevel(logrus.DebugLevel)
+	defer gock.Off()
+	MockMCVersions(t)
+	MockCurseForgeModResponse(t)
+
+	expected := 0
+	cliInput := []string{"-projects", "416089"}
 	actual := CLI(cliInput)
 	if actual != expected {
 		t.Errorf("Test failed, expected: '%d', got:  '%d'", expected, actual)
