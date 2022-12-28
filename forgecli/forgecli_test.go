@@ -43,14 +43,17 @@ func TestCLIReturnsZero(t *testing.T) {
 	MockCurseForgeModResponse(t)
 	MockCurseForgeModFile(t)
 
-	// Make mock folder to load mods into
-	var app appEnv
-	app.GetTargetDirectory()
-	AFS.MkdirAll(app.destination, 0755)
-
+	// // Make mock folder to load mods into
+	// var app appEnv
+	// app.GetTargetDirectory()
+	// AFS.MkdirAll(app.destination, 0755)
+	// err := os.MkdirAll(app.destination, os.ModeDir)
+	// if err != nil && !os.IsExist(err) {
+	// 	logrus.Debugf("error message: %s", err)
+	// }
 	// Start test
 	expected := 0
-	cliInput := []string{"-projects", "416089", "-destination", app.destination}
+	cliInput := []string{"-projects", "416089", "-destination", "."}
 	actual := CLI(cliInput)
 	if actual != expected {
 		t.Errorf("Test failed, expected: '%d', got:  '%d'", expected, actual)
