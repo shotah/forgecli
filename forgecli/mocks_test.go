@@ -6,6 +6,7 @@ import (
 
 	"github.com/h2non/gock"
 	"github.com/nbio/st"
+	"github.com/sirupsen/logrus"
 )
 
 // MockFabricXML used to return mock xml data for fabric calls
@@ -55,4 +56,13 @@ func MockCurseForgeModResponse(t *testing.T) {
 		Get("/v1/mods/416089/files").
 		Reply(200).
 		JSON(body)
+}
+
+// MockCurseForgeModFile returns a mock jar in place of downloading the real jar file.
+func MockCurseForgeModFile(t *testing.T) {
+	logrus.Debug("Calling MockCurseForgeModFile")
+	mockFile := "./mocks/fake.jar"
+	gock.New("https://maven.fabricmc.net").
+		Get("/files/4162/410/voicechat-fabric-1.19.3-2.3.23.jar").
+		Reply(200).File(mockFile)
 }

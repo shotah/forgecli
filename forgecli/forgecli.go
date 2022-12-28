@@ -45,6 +45,7 @@ func CLI(args []string) int {
 }
 
 func (app *appEnv) fromArgs(args []string) error {
+	logrus.Debugf("fromArgs: args: %s", args)
 	// Shallow copy of default client
 	app.hc = *http.DefaultClient
 	app.modsToDownload = make(map[int]ForgeMod)

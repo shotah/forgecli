@@ -3,6 +3,7 @@ package forgecli
 import (
 	"bytes"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 
@@ -26,6 +27,7 @@ func TestFabricClientInstallerLatestFabricVersion(t *testing.T) {
 	if !strings.Contains(output, expected) {
 		t.Errorf("Test failed, expected: '%s', got:  '%s'", expected, output)
 	}
+	logrus.SetOutput(os.Stdout)
 }
 
 func TestFabricClientDownload(t *testing.T) {
@@ -55,10 +57,9 @@ func TestFabricClientDownload(t *testing.T) {
 	if err := app.FabricClientRemoval(); err != nil {
 		t.Errorf("Test failed, could not remove client jar, error:  '%s'", err)
 	}
+	logrus.SetOutput(os.Stdout)
 }
 
-// TODO: Figure out how to mock 'java' call
-// BREAKS: on CI/CD in Github
 func TestFabricClientInstaller(t *testing.T) {
 	javaInstallFabric = func(installCommands []string) ([]byte, error) {
 		return []byte("mock jar install"), nil
@@ -87,4 +88,5 @@ func TestFabricClientInstaller(t *testing.T) {
 	if !strings.Contains(rawOutput, expectedRemovalOutput) {
 		t.Errorf("Test failed, expected: '%s', got:  '%s'", expectedRemovalOutput, rawOutput)
 	}
+	logrus.SetOutput(os.Stdout)
 }
