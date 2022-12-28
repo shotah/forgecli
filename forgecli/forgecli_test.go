@@ -35,6 +35,7 @@ func TestCLIReturnsZero(t *testing.T) {
 	defer gock.Off()
 	MockMCVersions(t)
 	MockCurseForgeModResponse(t)
+	MockCurseForgeModFile(t)
 
 	expected := 0
 	cliInput := []string{"-projects", "416089"}
