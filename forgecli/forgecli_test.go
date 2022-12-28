@@ -50,7 +50,7 @@ func TestCLIReturnsZero(t *testing.T) {
 
 	// Start test
 	expected := 0
-	cliInput := []string{"-projects", "416089"}
+	cliInput := []string{"-projects", "416089", "-destination", app.destination}
 	actual := CLI(cliInput)
 	if actual != expected {
 		t.Errorf("Test failed, expected: '%d', got:  '%d'", expected, actual)
