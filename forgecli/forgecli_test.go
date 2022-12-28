@@ -9,11 +9,7 @@ import (
 	"github.com/h2non/gock"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
 )
-
-var FS afero.Fs = afero.NewMemMapFs()
-var AFS *afero.Afero = &afero.Afero{Fs: FS}
 
 func LoadDotEnv() error {
 	logrus.SetLevel(logrus.DebugLevel)
@@ -43,14 +39,6 @@ func TestCLIReturnsZero(t *testing.T) {
 	MockCurseForgeModResponse(t)
 	MockCurseForgeModFile(t)
 
-	// // Make mock folder to load mods into
-	// var app appEnv
-	// app.GetTargetDirectory()
-	// AFS.MkdirAll(app.destination, 0755)
-	// err := os.MkdirAll(app.destination, os.ModeDir)
-	// if err != nil && !os.IsExist(err) {
-	// 	logrus.Debugf("error message: %s", err)
-	// }
 	// Start test
 	expected := 0
 	cliInput := []string{"-projects", "416089", "-destination", "."}
