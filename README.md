@@ -1,4 +1,4 @@
-![Coverage](https://img.shields.io/badge/Coverage-65.2%25-yellow)
+![Coverage](https://img.shields.io/badge/Coverage-80.9%25-brightgreen)
 [![CI](https://github.com/shotah/forgecli/workflows/ContinuousIntegration/badge.svg)](https://github.com/shotah/forgecli/actions?query=workflow:ContinuousIntegration)
 [![Update release version.](https://github.com/shotah/forgecli/workflows/PublishRelease/badge.svg)](https://github.com/shotah/forgecli/actions?query=workflow:PublishRelease)
 
