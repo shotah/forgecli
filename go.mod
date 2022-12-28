@@ -11,7 +11,9 @@ require (
 
 require (
 	github.com/h2non/parth v0.0.0-20190131123155-b4df798d6542 // indirect
+	github.com/spf13/afero v1.9.3 // indirect
 	github.com/stretchr/testify v1.7.1 // indirect
 	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/text v0.3.4 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
