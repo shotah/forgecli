@@ -50,10 +50,10 @@ chocolateys:
     authors: chblodg
     project_url: https://github.com/shotah/forgecli
     url_template: https://github.com/shotah/forgecli/releases/download/{{ .Tag }}/{{ .ArtifactName }}
-    icon_url: https://github.com/shotah/forgecli/blob/main/icon.png
+    icon_url: https://rawcdn.githack.com/shotah/forgecli/4e38eaf6b0698bdf9af6379650c4a78887b841e2/icon.png
     copyright: 2022 chblodg
     license_url: https://github.com/shotah/forgecli/blob/main/LICENSE
-    project_source_url: https://github.com/shotah/forgecli
+    project_source_url: https://github.com/shotah/forgecli/blob/main/.goreleaser.yml
     docs_url: https://github.com/shotah/forgecli/blob/main/README.md
     bug_tracker_url: https://github.com/shotah/forgecli/issues
     tags: curseforge cli minecraft fabric forge mods
